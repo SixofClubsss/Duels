@@ -203,20 +203,29 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		case "Claim All":
 			if rpc.IsReady() {
 				claimable := checkClaimable()
-				dialog.NewConfirm("Claim All", fmt.Sprintf("Claim your %d available assets?", len(claimable)), func(b bool) {
-					if b {
-						go claimClaimable(claimable, d)
-					}
-				}, d.Window).Show()
+				l := len(claimable)
+				if l > 0 {
+					dialog.NewConfirm("Claim All", fmt.Sprintf("Claim your %d available assets?", l), func(b bool) {
+						if b {
+							go claimClaimable(claimable, d)
+						}
+					}, d.Window).Show()
+				} else {
+					dialog.NewInformation("Claim All", "You have no claimable assets", d.Window).Show()
+				}
 			} else {
 				dialog.NewInformation("Claim All", "You are not connected to daemon or wallet", d.Window).Show()
 			}
 		case "Clear Cache":
-			dialog.NewConfirm("Clear Image Cache", "Would you like to clear your stored image cache?", func(b bool) {
-				if b {
-					deleteIndex()
-				}
-			}, d.Window).Show()
+			if menu.Gnomes.DBType == "boltdb" {
+				dialog.NewConfirm("Clear Image Cache", "Would you like to clear your stored image cache?", func(b bool) {
+					if b {
+						deleteIndex()
+					}
+				}, d.Window).Show()
+			} else {
+				dialog.NewInformation("Clear Cache", "You have no stored image cache", d.Window).Show()
+			}
 		default:
 			// nothing
 		}

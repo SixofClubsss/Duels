@@ -84,8 +84,6 @@ func StartApp() {
 		// Ping daemon
 		rpc.Ping()
 
-		//rpc.TestMsg("976f1710dc091c814aa3e64f52c2c706de14f6223e2a07c9b931c6f927f07e95")
-
 		// Start Gnomon with search filters when connected to daemon
 		if rpc.Daemon.IsConnected() && !menu.Gnomes.IsInitialized() && !menu.Gnomes.Start {
 			go menu.StartGnomon(app_tag, menu.Gnomes.DBType, []string{rpc.GetSCCode(DUELSCID), menu.NFA_SEARCH_FILTER}, 0, 0, nil)
@@ -116,6 +114,7 @@ func StartApp() {
 					}
 				} else {
 					menu.Assets.Assets = []string{}
+					menu.Assets.Asset_list.Refresh()
 					menu.Control.Claim_button.Hide()
 					menu.DisableIndexControls(true)
 					synced = false

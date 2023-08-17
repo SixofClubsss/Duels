@@ -1,6 +1,6 @@
 package main
 
-import duel "github.com/dReam-dApps/dReams/duels"
+import "github.com/SixofClubsss/Duels/duel"
 
 // Run Ref Service cli for Asset Duels
 

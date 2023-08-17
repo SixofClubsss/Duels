@@ -17,7 +17,7 @@ func storeIndex() (err error) {
 	}
 
 	if menu.Gnomes.Indexer == nil {
-		logger.Errorln("[deleteIndex] DB is nil")
+		logger.Errorln("[storeIndex] DB is nil")
 		return
 	}
 
@@ -69,7 +69,7 @@ func getIndex() (stored entries) {
 	}
 
 	if menu.Gnomes.Indexer == nil {
-		logger.Errorln("[deleteIndex] DB is nil")
+		logger.Errorln("[getIndex] DB is nil")
 		return
 	}
 

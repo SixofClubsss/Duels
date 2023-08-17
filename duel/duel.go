@@ -1089,7 +1089,7 @@ func checkOwnerAndRefs() bool {
 
 // Checks if wallet has any claimable duel NFAs, looking for dst from ref transfer
 func checkClaimable() (claimable []string) {
-	entries := rpc.GetWalletTransfers(0, 3000000, uint64(0xA1B2C3D4E5F67890))
+	entries := rpc.GetWalletTransfers(2450000, uint64(rpc.Wallet.Height), uint64(0xA1B2C3D4E5F67890))
 	for _, e := range *entries {
 		split := strings.Split(string(e.Payload), "  ")
 		if len(split) > 2 && len(split[1]) == 64 {
@@ -1097,7 +1097,17 @@ func checkClaimable() (claimable []string) {
 				continue
 			}
 
-			claimable = append(claimable, split[1])
+			var have bool
+			for _, sc := range claimable {
+				if sc == split[1] {
+					have = true
+					break
+				}
+			}
+
+			if !have {
+				claimable = append(claimable, split[1])
+			}
 		}
 	}
 
@@ -1131,7 +1141,7 @@ func claimClaimable(claimable []string, d *dreams.AppObject) {
 			}
 
 			progress.SetValue(float64(i))
-			progress_label.SetText(fmt.Sprintf("Claiming: %s", claim))
+			progress_label.SetText(fmt.Sprintf("Claiming: %s\n\nPlease wait for TX to be confirmed", claim))
 			tx := rpc.ClaimNFA(claim)
 			time.Sleep(time.Second)
 			retry += rpc.ConfirmTxRetry(tx, "checkClaimable", 45)
