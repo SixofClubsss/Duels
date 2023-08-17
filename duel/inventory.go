@@ -17,8 +17,6 @@ import (
 	"github.com/dReam-dApps/dReams/rpc"
 )
 
-// inventory
-
 type asset struct {
 	rank uint64
 	img  []byte
@@ -92,7 +90,7 @@ func iconSmall(icon []byte, name string, died bool) fyne.CanvasObject {
 	return max
 }
 
-// Remove rank from asset display string
+// Remove {R#} rank from asset display string
 func removeRank(str string) (newStr string) {
 	newStr = str
 	for _, ending := range asset_ranks {
@@ -125,7 +123,7 @@ func validateAsset(scid string) uint64 {
 	return 0
 }
 
-// Add duel character asset to inventory
+// Add duel character asset to inventory and download icon image
 func (inv *inventory) AddCharToInventory(name string) {
 	scid := menu.Assets.Asset_map[name]
 	img, err := downloadBytes(scid)
@@ -145,7 +143,7 @@ func (inv *inventory) AddCharToInventory(name string) {
 	inv.Unlock()
 }
 
-// Add duel item asset to inventory
+// Add duel item asset to inventory and download icon image
 func (inv *inventory) AddItemToInventory(name string) {
 	scid := menu.Assets.Asset_map[name]
 	img, err := downloadBytes(scid)
@@ -201,7 +199,7 @@ func (inv *inventory) findRank() (rank uint64) {
 	return
 }
 
-// Add duel assets to inventory
+// Add duel assets to inventory, adding rank to name for display string
 func AddItemsToInventory(scid, header, owner, collection string) {
 	if rpc.TokenBalance(scid) != 1 {
 		logger.Debugf("[AddItemsToInventory] %s token not in wallet\n", scid)
