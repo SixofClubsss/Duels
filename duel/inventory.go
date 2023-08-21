@@ -103,7 +103,7 @@ func removeRank(str string) (newStr string) {
 }
 
 // Check if SCID has a valid duel rank
-func validateAsset(scid string) uint64 {
+func validateAssetRank(scid string) uint64 {
 	if desc, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "descrHdr"); desc != nil {
 		var rank assetRank
 		split := strings.Split(desc[0], ";;")
@@ -137,7 +137,7 @@ func (inv *inventory) AddCharToInventory(name string) {
 
 	inv.Lock()
 	inv.characters[name] = asset{
-		rank: validateAsset(scid),
+		rank: validateAssetRank(scid),
 		img:  img,
 	}
 	inv.Unlock()
@@ -157,7 +157,7 @@ func (inv *inventory) AddItemToInventory(name string) {
 
 	inv.Lock()
 	inv.items[name] = asset{
-		rank: validateAsset(scid),
+		rank: validateAssetRank(scid),
 		img:  img,
 	}
 	inv.Unlock()

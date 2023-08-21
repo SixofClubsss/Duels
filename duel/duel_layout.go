@@ -180,7 +180,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	equip_alpha.SetMinSize(fyne.NewSize(450, 650))
 
 	equip_box := container.NewCenter(equip_alpha,
-		container.NewBorder(character_cont, container.NewBorder(total_rank_label, nil, nil, nil, container.NewMax()), item1_cont, item2_cont, sil))
+		container.NewMax(container.NewBorder(container.NewMax(character_cont), container.NewBorder(total_rank_label, nil, nil, nil, container.NewMax()), container.NewMax(item1_cont), container.NewMax(item2_cont), sil)))
 
 	options_select := widget.NewSelect([]string{"Recheck Assets", "Claim All", "Clear Cache"}, nil)
 	options_select.PlaceHolder = "Options:"
@@ -392,6 +392,12 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 				}, d.Window).Show()
 
+				return
+			}
+
+			if !Duels.Index[selected_join].validateCollection() {
+				dialog.NewInformation("Invalid Collection", "This assets collection can not be validated", d.Window).Show()
+				Joins.List.UnselectAll()
 				return
 			}
 
@@ -1052,7 +1058,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	// Death match options
 	dm_label := dwidget.NewCenterLabel("")
 
-	hc_label := dwidget.NewCenterLabel("If a higher ranked player joins your duel, you will get receive odds on a loss")
+	hc_label := dwidget.NewCenterLabel("If a higher ranked player joins your duel, you will get paid back odds on a loss")
 
 	enable_dm := widget.NewRadioGroup([]string{"No", "Yes"}, nil)
 	enable_dm.SetSelected("No")

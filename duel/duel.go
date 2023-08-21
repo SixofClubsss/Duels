@@ -155,7 +155,7 @@ func fetch(d *dreams.AppObject, disconnect func()) {
 			}
 
 			if !synced && menu.GnomonScan(d.IsConfiguring()) {
-				logger.Println("[Duel] Syncing")
+				logger.Println("[Duels] Syncing")
 				Duels = getIndex()
 				synced = true
 			}
@@ -635,6 +635,79 @@ func (duel entry) assetName() (asset_name string) {
 	return
 }
 
+// Check all assets used for duel are valid
+func (duel entry) validateCollection() bool {
+	characters := []string{"Dero Desperados", "TestChars"}
+	items := []string{"Desperado Guns", "TestItems"}
+
+	switch duel.Items {
+	case 0:
+		if coll, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Char, "collection"); coll != nil {
+			for _, c := range characters {
+				if coll[0] == c {
+					return true
+				}
+			}
+		}
+	case 1:
+		var validChar bool
+		if coll, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Char, "collection"); coll != nil {
+			for _, c := range characters {
+				if coll[0] == c {
+					validChar = true
+					break
+				}
+			}
+		}
+
+		if validChar {
+			if item1, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Item1, "collection"); item1 != nil {
+				for _, c := range items {
+					if item1[0] == c {
+						return true
+					}
+				}
+			}
+		}
+	case 2:
+		var validChar bool
+		if coll, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Char, "collection"); coll != nil {
+			for _, c := range characters {
+				if coll[0] == c {
+					validChar = true
+					break
+				}
+			}
+		}
+
+		if validChar {
+			var validItem bool
+			if item1, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Item1, "collection"); item1 != nil {
+				for _, c := range items {
+					if item1[0] == c {
+						validItem = true
+						break
+					}
+				}
+			}
+
+			if validItem {
+				if item2, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Item1, "collection"); item2 != nil {
+					for _, c := range items {
+						if item2[0] == c {
+							return true
+						}
+					}
+				}
+			}
+		}
+	default:
+		// Nothing
+	}
+
+	return false
+}
+
 // Create the title header string for duel results
 func (duel entry) resultsHeaderString() string {
 	return fmt.Sprintf("Duel #%s   Pot: (%s %s)   Items: (%d)   Death Match: (%s)   Hardcore: (%s)   Block: (%d)", duel.Num, rpc.FromAtomic(duel.Amt*2, 5), duel.assetName(), duel.Items, duel.DM, duel.Rule, duel.Height)
@@ -654,6 +727,10 @@ func (duel entry) checkDuelAddresses() bool {
 
 // Find time since when duel has been ready
 func (duel entry) readySince() string {
+	if duel.Ready == 0 {
+		return "Completed"
+	}
+
 	now := time.Now()
 	ready := time.Unix(int64(duel.Ready), 0)
 
@@ -930,14 +1007,14 @@ func (duel entry) findEarning() (a, b uint64) {
 func (duel entry) getTotalRanks() (r1 uint64, r2 uint64) {
 	switch duel.Items {
 	case 0:
-		r1 = validateAsset(duel.Duelist.Char)
-		r2 = validateAsset(duel.Opponent.Char)
+		r1 = validateAssetRank(duel.Duelist.Char)
+		r2 = validateAssetRank(duel.Opponent.Char)
 	case 1:
-		r1 = validateAsset(duel.Duelist.Char) + validateAsset(duel.Duelist.Item1)
-		r2 = validateAsset(duel.Opponent.Char) + validateAsset(duel.Opponent.Item1)
+		r1 = validateAssetRank(duel.Duelist.Char) + validateAssetRank(duel.Duelist.Item1)
+		r2 = validateAssetRank(duel.Opponent.Char) + validateAssetRank(duel.Opponent.Item1)
 	case 2:
-		r1 = validateAsset(duel.Duelist.Char) + validateAsset(duel.Duelist.Item1) + validateAsset(duel.Duelist.Item2)
-		r2 = validateAsset(duel.Opponent.Char) + validateAsset(duel.Opponent.Item1) + validateAsset(duel.Opponent.Item2)
+		r1 = validateAssetRank(duel.Duelist.Char) + validateAssetRank(duel.Duelist.Item1) + validateAssetRank(duel.Duelist.Item2)
+		r2 = validateAssetRank(duel.Opponent.Char) + validateAssetRank(duel.Opponent.Item1) + validateAssetRank(duel.Opponent.Item2)
 	default:
 		logger.Errorln("[getAssetRank] Err - getting ranks", "r1:", r1, "r2:", r2)
 	}
@@ -949,11 +1026,11 @@ func (duel entry) getTotalRanks() (r1 uint64, r2 uint64) {
 func (duel entry) getDuelistRank() (r1 uint64) {
 	switch duel.Items {
 	case 0:
-		r1 = validateAsset(duel.Duelist.Char)
+		r1 = validateAssetRank(duel.Duelist.Char)
 	case 1:
-		r1 = validateAsset(duel.Duelist.Char) + validateAsset(duel.Duelist.Item1)
+		r1 = validateAssetRank(duel.Duelist.Char) + validateAssetRank(duel.Duelist.Item1)
 	case 2:
-		r1 = validateAsset(duel.Duelist.Char) + validateAsset(duel.Duelist.Item1) + validateAsset(duel.Duelist.Item2)
+		r1 = validateAssetRank(duel.Duelist.Char) + validateAssetRank(duel.Duelist.Item1) + validateAssetRank(duel.Duelist.Item2)
 	default:
 		logger.Errorln("[getDuelistRank] Err - getting rank")
 	}
@@ -995,27 +1072,27 @@ func (duel playerInfo) IconImage(size, img int) fyne.CanvasObject {
 
 // Find rank of character
 func (p playerInfo) getCharacterRank() uint64 {
-	return validateAsset(p.Char)
+	return validateAssetRank(p.Char)
 }
 
 // Find rank of item 1 or 2
 //   - i of 0 return item1 and 1 returns item2
 func (p playerInfo) getItemRank(i int) uint64 {
 	if i == 1 {
-		return validateAsset(p.Item2)
+		return validateAssetRank(p.Item2)
 	}
-	return validateAsset(p.Item1)
+	return validateAssetRank(p.Item1)
 }
 
 // Creates the rank display string
 func (p playerInfo) getRankString() (str string) {
-	str = fmt.Sprintf("{R%d}", validateAsset(p.Char))
+	str = fmt.Sprintf("{R%d}", validateAssetRank(p.Char))
 	if p.Item1 != "" {
-		str = str + fmt.Sprintf(" {R%d}", validateAsset(p.Item1))
+		str = str + fmt.Sprintf(" {R%d}", validateAssetRank(p.Item1))
 	}
 
 	if p.Item2 != "" {
-		str = str + fmt.Sprintf(" {R%d}", validateAsset(p.Item2))
+		str = str + fmt.Sprintf(" {R%d}", validateAssetRank(p.Item2))
 	}
 
 	return
