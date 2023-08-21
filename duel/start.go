@@ -221,6 +221,9 @@ func checkNFAOwner(scid string) {
 					} else if collection[0] == "Dero Desperados" {
 						menu.Assets.Add(header[0], scid)
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
+					} else if collection[0] == "Desperado Guns" {
+						menu.Assets.Add(header[0], scid)
+						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					}
 				}
 			}
