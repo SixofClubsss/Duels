@@ -96,6 +96,8 @@ github.com/creachadair/jrpc2 v0.43.0 h1:sgYSOoAWXZ5cx9pd2pYH8dkrjCNdDpFwhO4ucMeU
 github.com/creachadair/jrpc2 v0.43.0/go.mod h1:oOdNFoMQQpSirGcSujG10NYl05K/IYrIUUNbh+/Xcd8=
 github.com/dReam-dApps/dReams v0.10.1-0.20230817193111-d0581e03c662 h1:CK2t6hRzarJGUAQwSUN7zHumVYnmDw27Z0aKNCwSucI=
 github.com/dReam-dApps/dReams v0.10.1-0.20230817193111-d0581e03c662/go.mod h1:ZjHmD16iAWhQKPOVSzHKG12H5t6dJcCytnWb6nPrSJ4=
+github.com/dReam-dApps/dReams v0.10.1-0.20230822231833-ab399ba86cd5 h1:mZi9mbyR6HKWUXsirtbUzXllwgKWuVaiiVkLu7Rhj88=
+github.com/dReam-dApps/dReams v0.10.1-0.20230822231833-ab399ba86cd5/go.mod h1:P9TvmjSJ1zwTuuKUTomoDoxzI4fSJzMf31UqPC5i++0=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

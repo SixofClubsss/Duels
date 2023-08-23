@@ -123,7 +123,8 @@ func deleteIndex() {
 
 // Download NFA SCID icon image file as []byte
 func downloadBytes(scid string) ([]byte, error) {
-	resp, err := http.Get(menu.GetAssetUrl(1, scid))
+	client := http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(menu.GetAssetUrl(1, scid))
 	if err != nil {
 		return nil, err
 	}

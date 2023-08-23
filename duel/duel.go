@@ -437,8 +437,8 @@ func GetJoins() (update bool) {
 		}
 	}
 
-	Joins.SortIndex()
-	Ready.SortIndex()
+	Joins.SortIndex(false)
+	Ready.SortIndex(false)
 
 	return
 }
@@ -620,7 +620,7 @@ func GetFinals() (update bool) {
 		}
 	}
 
-	Finals.SortIndex()
+	Finals.SortIndex(true)
 
 	return
 }

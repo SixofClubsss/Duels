@@ -430,8 +430,8 @@ func refGetJoins() {
 		}
 	}
 
-	Joins.SortIndex()
-	Ready.SortIndex()
+	Joins.SortIndex(false)
+	Ready.SortIndex(false)
 }
 
 // Gets all duels for RefService
