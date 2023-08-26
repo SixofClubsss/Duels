@@ -429,7 +429,7 @@ func GetJoins() (update bool) {
 					Duels.WriteEntry(u, e)
 					update = true
 					Joins.All = append(Joins.All, u)
-				} else if e.Opponent.Icon.Char == nil && !Joins.Exists(u) {
+				} else if e.Opponent.Icon.Char == nil && !Joins.ExistsIndex(u) {
 					Joins.All = append(Joins.All, u)
 					update = true
 				}
@@ -452,7 +452,7 @@ func GetAllDuels() (update bool) {
 			}
 
 			if v.Opponent.Char != "" {
-				if Ready.Exists(u) {
+				if Ready.ExistsIndex(u) {
 					logger.Debugf("[GetAllDuels] %d b Char already here\n", u)
 				} else if !v.Complete {
 					Ready.All = append(Ready.All, u)
@@ -613,7 +613,7 @@ func GetFinals() (update bool) {
 					}
 					logger.Debugf("[GetFinals] %s invalid winner string\n", n)
 				}
-			} else if v.Complete && !Finals.Exists(u) {
+			} else if v.Complete && !Finals.ExistsIndex(u) {
 				Finals.All = append(Finals.All, u)
 				update = true
 			}

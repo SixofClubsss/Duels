@@ -13,6 +13,7 @@ import (
 	"github.com/dReam-dApps/dReams/menu"
 	"github.com/dReam-dApps/dReams/rpc"
 	"github.com/docopt/docopt-go"
+	"github.com/sirupsen/logrus"
 )
 
 var command_line string = `runRefService
@@ -147,7 +148,7 @@ func RunRefService() {
 		}
 	}
 
-	menu.InitLogrusLog(runtime.GOOS == "windows")
+	menu.InitLogrusLog(logrus.InfoLevel)
 
 	menu.Gnomes.Trim = true
 	menu.Gnomes.Fast = fastsync
@@ -423,7 +424,7 @@ func refGetJoins() {
 					}
 					Duels.WriteEntry(u, e)
 					Joins.All = append(Joins.All, u)
-				} else if e.Opponent.Icon.Char == nil && !Joins.Exists(u) {
+				} else if e.Opponent.Icon.Char == nil && !Joins.ExistsIndex(u) {
 					Joins.All = append(Joins.All, u)
 				}
 			}
@@ -443,7 +444,7 @@ func refGetAllDuels() {
 			}
 
 			if v.Opponent.Char != "" {
-				if Ready.Exists(u) {
+				if Ready.ExistsIndex(u) {
 					logger.Debugf("[refGetAllDuels] %d b Char already here\n", u)
 				} else if !v.Complete {
 					Ready.All = append(Ready.All, u)
