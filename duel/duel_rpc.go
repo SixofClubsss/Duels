@@ -155,7 +155,7 @@ func (duel entry) AcceptDuel(items, op uint64, char, item1, item2 string) {
 	}
 
 	if err := rpcClientW.CallFor(ctx, &txid, "transfer", params); err != nil {
-		logger.Println("[AcceptDuel]", err)
+		logger.Errorln("[AcceptDuel]", err)
 		return
 	}
 
@@ -242,7 +242,7 @@ func (duel entry) ref(n, addr string, win rune, odds uint64) (tx string) {
 }
 
 // Revive a character from graveyard
-func (grave grave) Revive() {
+func (grave grave) Revive() (tx string) {
 	rpcClientW, ctx, cancel := rpc.SetWalletClient(rpc.Wallet.Rpc, rpc.Wallet.UserPass)
 	defer cancel()
 
@@ -285,13 +285,14 @@ func (grave grave) Revive() {
 
 	logger.Println("[Revive] Revive TX:", txid)
 	rpc.AddLog("Revive TX: " + txid.TXID)
+
+	return txid.TXID
 }
 
 // Refund a duel, used by owners, refs and players
 func Refund(n string) {
 	rpcClientW, ctx, cancel := rpc.SetWalletClient(rpc.Wallet.Rpc, rpc.Wallet.UserPass)
 	defer cancel()
-	tag := "Refund"
 
 	args := dero.Arguments{
 		dero.Argument{Name: "entrypoint", DataType: "S", Value: "Refund"},
@@ -300,7 +301,7 @@ func Refund(n string) {
 
 	t := []dero.Transfer{}
 	txid := dero.Transfer_Result{}
-	fee := rpc.GasEstimate(DUELSCID, fmt.Sprintf("[%s]", tag), args, t, rpc.LowLimitFee)
+	fee := rpc.GasEstimate(DUELSCID, "[Refund]", args, t, rpc.LowLimitFee)
 	params := &dero.Transfer_Params{
 		Transfers: t,
 		SC_ID:     DUELSCID,
@@ -310,7 +311,7 @@ func Refund(n string) {
 	}
 
 	if err := rpcClientW.CallFor(ctx, &txid, "transfer", params); err != nil {
-		logger.Errorf("[%s] %s", tag, err)
+		logger.Errorln("[Refund]", err)
 		return
 	}
 

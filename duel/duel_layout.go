@@ -327,7 +327,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					}
 					id = search.joins.results[i]
 				} else {
-					if len(Joins.All) < 1 {
+					if i+1 > len(Joins.All) {
 						return
 					}
 					id = Joins.All[i]
@@ -369,11 +369,14 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	Joins.List.OnSelected = func(id widget.ListItemID) {
 		go func() {
 			if search.joins.searching {
-				if len(search.joins.results) < 1 {
+				if search.joins.results == nil {
 					return
 				}
 				selected_join = search.joins.results[id]
 			} else {
+				if id+1 > len(Joins.All) {
+					return
+				}
 				selected_join = Joins.All[id]
 			}
 
@@ -658,7 +661,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					}
 					id = search.ready.results[i]
 				} else {
-					if len(Ready.All) < 1 {
+					if i+1 > len(Ready.All) {
 						return
 					}
 					id = Ready.All[i]
@@ -721,7 +724,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			}
 			selected_duel = search.ready.results[id]
 		} else {
-			if len(Ready.All) < 1 {
+			if id+1 > len(Ready.All) {
 				return
 			}
 			selected_duel = Ready.All[id]
@@ -805,11 +808,12 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					}
 					id = search.graves.results[i]
 				} else {
-					if len(Graveyard.All) < 1 {
+					if i+1 > len(Graveyard.All) {
 						return
 					}
 					id = Graveyard.All[i]
 				}
+
 				Graveyard.RLock()
 				defer Graveyard.RUnlock()
 				if Graveyard.Index[id].Char != "" {
@@ -833,27 +837,43 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			}()
 		})
 
+	// Confirm a revive from the graveyard, if revive tx is confirmed will auto claim it
 	accept_grave := widget.NewButton("Confirm", func() {
-		Graveyard.Index[selected_grave].Revive()
+		Graveyard.RLock()
+		defer Graveyard.RUnlock()
+		scid := Graveyard.Index[selected_grave].Char
+		if tx := Graveyard.Index[selected_grave].Revive(); tx != "" {
+			go func() {
+				menu.ShowTxDialog("Revive", fmt.Sprintf("TX: %s\n\nAuto claim tx will be sent once revive is confirmed", tx), tx, 5*time.Second, d.Window)
+				if rpc.ConfirmTx(tx, app_tag, 60) {
+					if claim := rpc.ClaimNFA(scid); claim != "" {
+						if rpc.ConfirmTx(claim, app_tag, 60) {
+							d.Notification(app_tag, fmt.Sprintf("Claimed: %s", scid))
+						}
+					}
+				}
+			}()
+		}
+
 		resetToTabs()
 	})
 
 	// Clicking on a grave will bring up revive confirmation
 	Graveyard.List.OnSelected = func(id widget.ListItemID) {
-		Graveyard.RLock()
-		defer Graveyard.RUnlock()
 		if search.graves.searching {
 			if search.graves.results == nil {
 				return
 			}
 			selected_grave = search.graves.results[id]
 		} else {
-			if len(Graveyard.All) < 1 {
+			if id+1 > len(Graveyard.All) {
 				return
 			}
 			selected_grave = Graveyard.All[id]
 		}
 
+		Graveyard.RLock()
+		defer Graveyard.RUnlock()
 		now := time.Now()
 		avail := time.Unix(Graveyard.Index[selected_grave].Time, 0)
 
@@ -869,7 +889,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 		start_duel.Hide()
 		icon := Graveyard.Index[selected_grave].IconImage(1)
-		revive_fee := fmt.Sprintf("%s %s", rpc.FromAtomic(Graveyard.Index[selected_grave].Amt, 5), Graveyard.Index[selected_grave].assetName())
+		revive_fee := fmt.Sprintf("%s %s", rpc.FromAtomic(Graveyard.Index[selected_grave].findDiscount(), 5), Graveyard.Index[selected_grave].assetName())
 
 		graveyard_cont := container.NewBorder(
 			container.NewVBox(
@@ -933,14 +953,14 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					}
 					id = search.results.results[i]
 				} else {
-					if len(Finals.All) < 1 {
+					if i+1 > len(Finals.All) {
 						return
 					}
 					id = Finals.All[i]
 				}
+
 				Duels.RLock()
 				defer Duels.RUnlock()
-
 				if Duels.Index[id].Complete && Duels.Index[id].Opponent.Char != "" {
 					var arrow fyne.CanvasObject
 					if Duels.Index[id].Odds < 475 {

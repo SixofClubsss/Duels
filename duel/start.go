@@ -32,7 +32,7 @@ func StartApp() {
 	menu.InitLogrusLog(logrus.InfoLevel)
 	config := menu.ReadDreamsConfig(app_tag)
 
-	a := app.New()
+	a := app.NewWithID(fmt.Sprintf("%s Client", app_tag))
 	a.Settings().SetTheme(bundle.DeroTheme(config.Skin))
 	w := a.NewWindow(app_tag)
 	w.SetIcon(resourceDuelIconPng)
@@ -42,6 +42,7 @@ func StartApp() {
 
 	dreams.Theme.Img = *canvas.NewImageFromResource(nil)
 	d := dreams.AppObject{
+		App:        a,
 		Window:     w,
 		Background: container.NewMax(&dreams.Theme.Img),
 	}
@@ -93,6 +94,7 @@ func StartApp() {
 
 	// Main routine
 	go func() {
+		logger.Printf("[%s] %s %s %s", app_tag, rpc.DREAMSv, runtime.GOOS, runtime.GOARCH)
 		synced := false
 		time.Sleep(3 * time.Second)
 		ticker := time.NewTicker(3 * time.Second)
