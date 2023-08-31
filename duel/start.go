@@ -146,6 +146,7 @@ func StartApp() {
 			case <-d.Closing(): // exit loop
 				logger.Printf("[%s] Closing...\n", app_tag)
 				ticker.Stop()
+				d.CloseAllDapps()
 				time.Sleep(time.Second)
 				done <- struct{}{}
 				return
@@ -180,6 +181,7 @@ func StartApp() {
 	}()
 	w.ShowAndRun()
 	<-done
+	logger.Printf("[%s] Closed\n", app_tag)
 }
 
 // Checks for valid duel NFAs, used only in stand alone version
