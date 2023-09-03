@@ -114,7 +114,7 @@ func validateAssetRank(scid string) uint64 {
 
 		if err := json.Unmarshal([]byte(rpc.HexToString(split[1])), &rank); err != nil {
 			logger.Errorln("[validateAsset]", err)
-			return 0
+			return 1
 		}
 
 		return uint64(rank.Rank)
@@ -200,6 +200,7 @@ func (inv *inventory) findRank() (rank uint64) {
 }
 
 // Add duel assets to inventory, adding rank to name for display string
+// Implemented characters or items without a rank are hard coded rank 1
 func AddItemsToInventory(scid, header, owner, collection string) {
 	if rpc.TokenBalance(scid) != 1 {
 		logger.Debugf("[AddItemsToInventory] %s token not in wallet\n", scid)
@@ -219,7 +220,6 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 
 				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
 				go Inventory.AddCharToInventory(header)
-
 			case "Desperado Guns":
 				if err := json.Unmarshal([]byte(rpc.HexToString(splitDesc[1])), &rank); err != nil {
 					logger.Errorln("[AddItemsToInventory]", err)
@@ -229,7 +229,9 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 				Inventory.Item1.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
 				Inventory.Item2.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
 				go Inventory.AddItemToInventory(header)
-
+			case "High Strangeness":
+				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, 1), owner)
+				go Inventory.AddCharToInventory(header)
 			case "TestChars":
 				if err := json.Unmarshal([]byte(rpc.HexToString(splitDesc[1])), &rank); err != nil {
 					logger.Errorln("[AddItemsToInventory]", err)

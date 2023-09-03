@@ -49,12 +49,18 @@ func StartApp() {
 
 	closeFunc := func() {
 		menu.CloseAppSignal(true)
-		menu.WriteDreamsConfig(
-			dreams.SaveData{
-				Skin:   config.Skin,
-				Daemon: []string{rpc.Daemon.Rpc},
-				DBtype: menu.Gnomes.DBType,
-			})
+		save := dreams.SaveData{
+			Skin:   config.Skin,
+			DBtype: menu.Gnomes.DBType,
+		}
+
+		if rpc.Daemon.Rpc == "" {
+			save.Daemon = config.Daemon
+		} else {
+			save.Daemon = []string{rpc.Daemon.Rpc}
+		}
+
+		menu.WriteDreamsConfig(save)
 		menu.Gnomes.Stop(app_tag)
 		d.StopProcess()
 		w.Close()
@@ -227,6 +233,9 @@ func checkNFAOwner(scid string) {
 						menu.Assets.Add(header[0], scid)
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					} else if collection[0] == "Desperado Guns" {
+						menu.Assets.Add(header[0], scid)
+						AddItemsToInventory(scid, header[0], owner[0], collection[0])
+					} else if collection[0] == "High Strangeness" {
 						menu.Assets.Add(header[0], scid)
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					}

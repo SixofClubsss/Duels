@@ -124,7 +124,7 @@ func deleteIndex() {
 // Download NFA SCID icon image file as []byte
 func downloadBytes(scid string) ([]byte, error) {
 	client := http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Get(menu.GetAssetUrl(1, scid))
+	resp, err := client.Get(findCollectionURL(scid))
 	if err != nil {
 		return nil, err
 	}
@@ -136,4 +136,24 @@ func downloadBytes(scid string) ([]byte, error) {
 	}
 
 	return image, nil
+}
+
+// Find which images should be used for a collection, icon or main file
+func findCollectionURL(scid string) (url string) {
+	if menu.Gnomes.IsReady() {
+		w := 1
+		coll, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "collection")
+		if coll != nil {
+			switch coll[0] {
+			case "High Strangeness":
+				w = 0
+			default:
+				// nothing, w 1 is icon
+			}
+
+			url = menu.GetAssetUrl(w, scid)
+		}
+	}
+
+	return
 }

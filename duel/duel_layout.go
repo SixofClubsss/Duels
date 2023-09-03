@@ -1065,7 +1065,15 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 	top_label := container.NewHBox(D.LeftLabel, layout.NewSpacer(), D.RightLabel)
 
-	max = container.NewMax(container.NewHSplit(container.NewCenter(equip_cont), container.NewMax(bundle.NewAlpha120(), tabs)))
+	boot_label := dwidget.NewCenterLabel("Connect to Daemon and Wallet to sync")
+	boot_prog := widget.NewProgressBar()
+	boot_prog.Min = 0
+	boot_prog.Max = 4
+	boot_spacer := canvas.NewRectangle(color.RGBA{0, 0, 0, 0})
+	boot_spacer.SetMinSize(fyne.NewSize(equip_cont.Size().Width, 0))
+	boot_cont := container.NewVBox(boot_prog, boot_spacer, boot_label)
+
+	max = container.NewMax(container.NewHSplit(container.NewCenter(boot_cont), container.NewMax(bundle.NewAlpha120(), tabs)))
 	max.Objects[0].(*container.Split).SetOffset(0)
 
 	// Start a duel form
@@ -1309,21 +1317,100 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		max.Objects[0].(*container.Split).Trailing.Refresh()
 	}
 
-	disconnectFunc := func() {
-		start_duel.Hide()
-		character_cont.Objects[0] = container.NewCenter(character)
-		item1_cont.Objects[1] = container.NewCenter(item1)
-		item2_cont.Objects[1] = container.NewCenter(item2)
-	}
-
-	go fetch(d, disconnectFunc)
+	// Main duel process
 	go func() {
-		for !menu.ClosingApps() {
-			if !rpc.IsReady() {
-				max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
-				max.Objects[0].(*container.Split).Trailing.Refresh()
+		Graveyard.Index = make(map[uint64]grave)
+		Inventory.characters = make(map[string]asset)
+		Inventory.items = make(map[string]asset)
+		time.Sleep(3 * time.Second)
+		var offset int
+		var synced, loaded bool
+		for {
+			select {
+			case <-d.Receive():
+				if !rpc.Wallet.IsConnected() || !rpc.Daemon.IsConnected() {
+					start_duel.Hide()
+					character_cont.Objects[0] = container.NewCenter(character)
+					item1_cont.Objects[1] = container.NewCenter(item1)
+					item2_cont.Objects[1] = container.NewCenter(item2)
+
+					max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
+					max.Objects[0].(*container.Split).Trailing.Refresh()
+
+					Disconnected()
+					Inventory.Character.ClearAll()
+					Inventory.Item1.ClearAll()
+					Inventory.Item2.ClearAll()
+					synced = false
+					d.WorkDone()
+					continue
+				}
+
+				if !synced && menu.GnomonScan(d.IsConfiguring()) {
+					boot_label.SetText("Creating Duels Index, this may take a few minutes to complete")
+					logger.Println("[Duels] Syncing")
+					Duels = getIndex()
+					synced = true
+				}
+
+				if synced {
+					if GetJoins() {
+						Joins.List.Refresh()
+					}
+
+					if !loaded {
+						boot_prog.SetValue(1)
+						boot_prog.Refresh()
+					}
+
+					if GetAllDuels() {
+						Ready.List.Refresh()
+					}
+
+					if !loaded {
+						boot_prog.SetValue(2)
+						boot_prog.Refresh()
+					}
+
+					if GetFinals() {
+						Finals.List.Refresh()
+					}
+
+					if !loaded {
+						boot_prog.SetValue(3)
+						boot_prog.Refresh()
+					}
+
+					GetGraveyard()
+					if offset%10 == 0 {
+						if !menu.Gnomes.IsClosing() {
+							storeIndex()
+						}
+					}
+
+					if !loaded {
+						boot_label.SetText("")
+						boot_prog.SetValue(4)
+						boot_prog.Refresh()
+						loaded = true
+						max.Objects[0].(*container.Split).Leading.(*fyne.Container).Objects[0] = container.NewCenter(equip_cont)
+						max.Objects[0].(*container.Split).Leading.Refresh()
+					}
+				}
+
+				D.LeftLabel.SetText(fmt.Sprintf("Total Duels Held: (%d)      Ready Duels: (%d)", Duels.Total, len(Ready.All)))
+				D.RightLabel.SetText("dReams Balance: " + rpc.DisplayBalance("dReams") + "      Dero Balance: " + rpc.DisplayBalance("Dero") + "      Height: " + rpc.Wallet.Display.Height)
+
+				offset++
+				if offset > 10 {
+					offset = 0
+				}
+
+				d.WorkDone()
+			case <-d.CloseDapp():
+				logger.Println("[Duels] Done")
+				return
 			}
-			time.Sleep(time.Second)
 		}
 	}()
 
