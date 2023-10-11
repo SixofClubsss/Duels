@@ -73,23 +73,9 @@ func (grave grave) findDiscount() (discount uint64) {
 func GetGraveyard() {
 	if menu.Gnomes.IsReady() {
 		if info := menu.Gnomes.GetAllSCIDVariableDetails(DUELSCID); info != nil {
-			i := 0
-			keys := make([]int, len(info))
-			for k := range info {
-				keys[i] = int(k)
-				i++
-			}
-
-			// If no info, return
-			if len(keys) == 0 {
-				return
-			}
-
-			sort.Ints(keys)
-
 			Graveyard.Lock()
 			defer Graveyard.Unlock()
-			for _, h := range info[int64(keys[len(keys)-1])] {
+			for _, h := range info {
 				if str, ok := h.Key.(string); ok {
 					split := strings.Split(str, "_")
 					switch split[0] {
