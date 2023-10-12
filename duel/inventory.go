@@ -210,7 +210,8 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 	if desc, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "descrHdr"); desc != nil {
 		var rank assetRank
 		splitDesc := strings.Split(desc[0], ";;")
-		if len(splitDesc) > 0 {
+		if len(splitDesc) > 1 {
+			// Ranked assets
 			switch collection {
 			case "Dero Desperados":
 				if err := json.Unmarshal([]byte(rpc.HexToString(splitDesc[1])), &rank); err != nil {
@@ -229,9 +230,6 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 				Inventory.Item1.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
 				Inventory.Item2.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
 				go Inventory.AddItemToInventory(header)
-			case "High Strangeness":
-				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, 1), owner)
-				go Inventory.AddCharToInventory(header)
 			case "TestChars":
 				if err := json.Unmarshal([]byte(rpc.HexToString(splitDesc[1])), &rank); err != nil {
 					logger.Errorln("[AddItemsToInventory]", err)
@@ -249,6 +247,13 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 				Inventory.Item1.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
 				Inventory.Item2.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
 				go Inventory.AddItemToInventory(header)
+			}
+		} else {
+			rank := 1
+			switch collection {
+			case "High Strangeness":
+				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, rank), owner)
+				go Inventory.AddCharToInventory(header)
 			}
 		}
 	}
