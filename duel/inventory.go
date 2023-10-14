@@ -127,6 +127,8 @@ func validateAssetRank(scid string) uint64 {
 func (inv *inventory) AddCharToInventory(name string) {
 	scid := menu.Assets.Asset_map[name]
 	img, err := downloadBytes(scid)
+	inv.Lock()
+	defer inv.Unlock()
 	if err != nil {
 		inv.characters[name] = asset{
 			rank: 0,
@@ -135,18 +137,18 @@ func (inv *inventory) AddCharToInventory(name string) {
 		return
 	}
 
-	inv.Lock()
 	inv.characters[name] = asset{
 		rank: validateAssetRank(scid),
 		img:  img,
 	}
-	inv.Unlock()
 }
 
 // Add duel item asset to inventory and download icon image
 func (inv *inventory) AddItemToInventory(name string) {
 	scid := menu.Assets.Asset_map[name]
 	img, err := downloadBytes(scid)
+	inv.Lock()
+	defer inv.Unlock()
 	if err != nil {
 		inv.items[name] = asset{
 			rank: 0,
@@ -155,12 +157,10 @@ func (inv *inventory) AddItemToInventory(name string) {
 		return
 	}
 
-	inv.Lock()
 	inv.items[name] = asset{
 		rank: validateAssetRank(scid),
 		img:  img,
 	}
-	inv.Unlock()
 }
 
 // Sort all inventory select options
