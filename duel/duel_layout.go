@@ -113,7 +113,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	Inventory.Item1.Select.PlaceHolder = "Item 1:"
 	item1_clear := widget.NewButtonWithIcon("", fyne.Theme.Icon(fyne.CurrentApp().Settings().Theme(), "viewRefresh"), nil)
 
-	item1_cont := container.NewVBox(container.NewBorder(nil, nil, item1_clear, nil, container.NewMax(select_spacer, Inventory.Item1.Select)), container.NewCenter(item1))
+	item1_cont := container.NewVBox(container.NewBorder(nil, nil, item1_clear, nil, container.NewStack(select_spacer, Inventory.Item1.Select)), container.NewCenter(item1))
 	item1_clear.OnTapped = func() {
 		Inventory.Item1.Select.ClearSelected()
 		Inventory.Item1.Select.Selected = ""
@@ -150,7 +150,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	Inventory.Item2.Select = widget.NewSelect(item2_opts, nil)
 	Inventory.Item2.Select.PlaceHolder = "Item 2:"
 	item2_clear := widget.NewButtonWithIcon("", fyne.Theme.Icon(fyne.CurrentApp().Settings().Theme(), "viewRefresh"), nil)
-	item2_cont := container.NewVBox(container.NewBorder(nil, nil, item2_clear, nil, container.NewMax(select_spacer, Inventory.Item2.Select)), container.NewCenter(item2))
+	item2_cont := container.NewVBox(container.NewBorder(nil, nil, item2_clear, nil, container.NewStack(select_spacer, Inventory.Item2.Select)), container.NewCenter(item2))
 	item2_clear.OnTapped = func() {
 		Inventory.Item2.Select.ClearSelected()
 		Inventory.Item2.Select.Selected = ""
@@ -180,7 +180,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	equip_alpha.SetMinSize(fyne.NewSize(450, 650))
 
 	equip_box := container.NewCenter(equip_alpha,
-		container.NewMax(container.NewBorder(container.NewMax(character_cont), container.NewBorder(total_rank_label, nil, nil, nil, container.NewMax()), container.NewMax(item1_cont), container.NewMax(item2_cont), sil)))
+		container.NewStack(container.NewBorder(container.NewStack(character_cont), container.NewBorder(total_rank_label, nil, nil, nil, container.NewStack()), container.NewStack(item1_cont), container.NewStack(item2_cont), sil)))
 
 	options_select := widget.NewSelect([]string{"Recheck Assets", "Claim All", "Clear Cache"}, nil)
 	options_select.PlaceHolder = "Options:"
@@ -234,7 +234,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 	equip_cont := container.NewBorder(
 		dwidget.NewCanvasText("Your Inventory", 18, fyne.TextAlignCenter),
-		container.NewAdaptiveGrid(2, container.NewMax(start_duel), options_select),
+		container.NewAdaptiveGrid(2, container.NewStack(start_duel), options_select),
 		nil,
 		nil,
 		equip_box)
@@ -613,7 +613,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 			opponent_equip_cont = container.NewBorder(dwidget.NewCanvasText(fmt.Sprintf("Accept %s for %s %s", header, rpc.FromAtomic(amt, 5), asset_name), 18, fyne.TextAlignCenter), container.NewVBox(opponent_label, container.NewAdaptiveGrid(2, accept_duel, back_button)), nil, nil, opponent_equip_box)
 
-			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = container.NewMax(bundle.NewAlpha180(), opponent_equip_cont)
+			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = container.NewStack(bundle.NewAlpha180(), opponent_equip_cont)
 			max.Objects[0].(*container.Split).Trailing.Refresh()
 			Joins.List.UnselectAll()
 		}()
@@ -634,10 +634,10 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					container.NewHBox( // 0-0
 						container.NewVBox( // 0-0-0
 							container.NewHBox( // 0-0-0-0
-								dwidget.NewCenterLabel(""),                  // 0-0-0-0-0
-								container.NewMax(iconSmall(nil, "", false)), // 0-0-0-0-1
-								container.NewMax(layout.NewSpacer()),        // 0-0-0-0-2
-								container.NewMax(layout.NewSpacer())),       // 0-0-0-0-3
+								dwidget.NewCenterLabel(""),                    // 0-0-0-0-0
+								container.NewStack(iconSmall(nil, "", false)), // 0-0-0-0-1
+								container.NewStack(layout.NewSpacer()),        // 0-0-0-0-2
+								container.NewStack(layout.NewSpacer())),       // 0-0-0-0-3
 							dwidget.NewTrailingLabel("")), // 0-0-0-1
 
 						widget.NewSeparator(),                        // 0-0-1
@@ -646,10 +646,10 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 						container.NewVBox( // 0-0-4
 							container.NewHBox( // 0-0-4-0
-								container.NewMax(layout.NewSpacer()), // 0-0-4-0-0
-								container.NewMax(layout.NewSpacer()), // 0-0-4-0-1
-								container.NewMax(layout.NewSpacer()), // 0-0-4-0-2
-								dwidget.NewCenterLabel("")),          // 0-0-4-0-3
+								container.NewStack(layout.NewSpacer()), // 0-0-4-0-0
+								container.NewStack(layout.NewSpacer()), // 0-0-4-0-1
+								container.NewStack(layout.NewSpacer()), // 0-0-4-0-2
+								dwidget.NewCenterLabel("")),            // 0-0-4-0-3
 							widget.NewLabel(""))))) // 0-0-4-1
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
@@ -924,21 +924,21 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 							container.NewHBox( // 0-0-0-0
 								container.NewVBox( // 0-0-0-0-0
 									dwidget.NewTrailingLabel("")), // 0-0-0-0-0-1
-								container.NewMax(iconSmall(nil, "", false)), // 0-0-0-0-1
-								container.NewMax(layout.NewSpacer()),        // 0-0-0-0-1
-								container.NewMax(layout.NewSpacer())),       // 0-0-0-0-3
+								container.NewStack(iconSmall(nil, "", false)), // 0-0-0-0-1
+								container.NewStack(layout.NewSpacer()),        // 0-0-0-0-1
+								container.NewStack(layout.NewSpacer())),       // 0-0-0-0-3
 							dwidget.NewTrailingLabel(""),  // 0-0-0-1
 							dwidget.NewTrailingLabel("")), // 0-0-0-2
 
 						widget.NewSeparator(), // 0-0-1
-						container.NewBorder(nil, dwidget.NewCenterLabel(""), nil, nil, container.NewCenter(container.NewMax(layout.NewSpacer()))), // 0-0-2
+						container.NewBorder(nil, dwidget.NewCenterLabel(""), nil, nil, container.NewCenter(container.NewStack(layout.NewSpacer()))), // 0-0-2
 						widget.NewSeparator(), // 0-0-3
 
 						container.NewVBox( // 0-0-4
 							container.NewHBox( // 0-0-4-0
-								container.NewMax(layout.NewSpacer()), // 0-0-4-0-0
-								container.NewMax(layout.NewSpacer()), // 0-0-4-0-1
-								container.NewMax(layout.NewSpacer()), // 0-0-4-0-2
+								container.NewStack(layout.NewSpacer()), // 0-0-4-0-0
+								container.NewStack(layout.NewSpacer()), // 0-0-4-0-1
+								container.NewStack(layout.NewSpacer()), // 0-0-4-0-2
 								container.NewVBox( // 0-0-4-0-3
 									widget.NewLabel(""))), // 0-0-4-0-3-0
 							widget.NewLabel(""),    // 0-0-4-1
@@ -1073,7 +1073,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	boot_spacer.SetMinSize(fyne.NewSize(equip_cont.Size().Width, 0))
 	boot_cont := container.NewVBox(boot_prog, boot_spacer, boot_label)
 
-	max = container.NewMax(container.NewHSplit(container.NewCenter(boot_cont), container.NewMax(bundle.NewAlpha120(), tabs)))
+	max = container.NewStack(container.NewHSplit(container.NewCenter(boot_cont), container.NewStack(bundle.NewAlpha120(), tabs)))
 	max.Objects[0].(*container.Split).SetOffset(0)
 
 	// Start a duel form
@@ -1302,7 +1302,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			start_duel_item2.SetText("None")
 		}
 
-		max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = container.NewBorder(dwidget.NewCanvasText("Start Duel", 18, fyne.TextAlignCenter), action_cont, nil, nil, container.NewBorder(layout.NewSpacer(), container.NewMax(start_label_spacer, container.NewVBox(dm_label, hc_label)), nil, nil, container.NewVBox(layout.NewSpacer(), container.NewCenter(widget.NewForm(start_duel_form...)), layout.NewSpacer())))
+		max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = container.NewBorder(dwidget.NewCanvasText("Start Duel", 18, fyne.TextAlignCenter), action_cont, nil, nil, container.NewBorder(layout.NewSpacer(), container.NewStack(start_label_spacer, container.NewVBox(dm_label, hc_label)), nil, nil, container.NewVBox(layout.NewSpacer(), container.NewCenter(widget.NewForm(start_duel_form...)), layout.NewSpacer())))
 		max.Objects[0].(*container.Split).Trailing.Refresh()
 		start_duel.Hide()
 	}

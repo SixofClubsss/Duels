@@ -50,13 +50,13 @@ func iconLarge(icon []byte, name string) fyne.CanvasObject {
 
 	canv := canvas.NewImageFromReader(bytes.NewReader(icon), name)
 	if canv == nil {
-		return container.NewMax(frame)
+		return container.NewStack(frame)
 	}
 
 	canv.SetMinSize(fyne.NewSize(90, 90))
 	border := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), layout.NewSpacer(), layout.NewSpacer(), canv)
 
-	return container.NewMax(border, frame)
+	return container.NewStack(border, frame)
 }
 
 // Creates a 60x60 icon with frame
@@ -72,13 +72,13 @@ func iconSmall(icon []byte, name string, died bool) fyne.CanvasObject {
 
 	canv := canvas.NewImageFromReader(bytes.NewReader(icon), name)
 	if canv == nil {
-		return container.NewMax(frame)
+		return container.NewStack(frame)
 	}
 
 	canv.SetMinSize(fyne.NewSize(55, 55))
 	border := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), layout.NewSpacer(), layout.NewSpacer(), canv)
 
-	max := container.NewMax(border)
+	max := container.NewStack(border)
 	if died {
 		x := canvas.NewImageFromResource(resourceDiedPng)
 		x.SetMinSize(fyne.NewSize(60, 60))
