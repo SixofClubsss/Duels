@@ -79,7 +79,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				Inventory.Item1.Select.Selected = ""
 				Inventory.Item2.Select.Selected = ""
 				start_duel.Hide()
-				character_cont.Objects[0] = container.NewCenter(character)
+				character_cont.Objects[0].(*fyne.Container).Objects[0] = character
 				if starting_duel {
 					resetToTabs()
 					info := dialog.NewInformation("Start Duel", "Choose a character to duel with", d.Window)
@@ -98,7 +98,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			}
 			Inventory.Item1.Select.Enable()
 			Inventory.RLock()
-			character_cont.Objects[0] = container.NewCenter(iconLarge(Inventory.characters[removeRank(s)].img, s))
+			character_cont.Objects[0].(*fyne.Container).Objects[0] = iconLarge(Inventory.characters[removeRank(s)].img, s)
 			Inventory.RUnlock()
 		}()
 	}
@@ -128,7 +128,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			Inventory.Item2.Select.Selected = ""
 			Inventory.Item2.Select.Options = Inventory.Item1.Select.Options
 			Inventory.Item2.Select.Refresh()
-			item1_cont.Objects[1] = container.NewCenter(item1)
+			item1_cont.Objects[1].(*fyne.Container).Objects[0] = item1
 			if Inventory.Character.Select.Selected == "" {
 				Inventory.Item1.Select.Disable()
 			} else {
@@ -138,7 +138,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		}
 
 		Inventory.RLock()
-		item1_cont.Objects[1] = container.NewCenter(iconLarge(Inventory.items[removeRank(s)].img, s))
+		item1_cont.Objects[1].(*fyne.Container).Objects[0] = iconLarge(Inventory.items[removeRank(s)].img, s)
 		Inventory.RUnlock()
 		Inventory.Item2.Select.Enable()
 	}
@@ -164,12 +164,12 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			if Inventory.Character.Select.Selected == "" && rpc.IsReady() {
 				Inventory.Item1.Select.Enable()
 			}
-			item2_cont.Objects[1] = container.NewCenter(item2)
+			item2_cont.Objects[1].(*fyne.Container).Objects[0] = item2
 			return
 		}
 
 		Inventory.RLock()
-		item2_cont.Objects[1] = container.NewCenter(iconLarge(Inventory.items[removeRank(s)].img, s))
+		item2_cont.Objects[1].(*fyne.Container).Objects[0] = iconLarge(Inventory.items[removeRank(s)].img, s)
 		Inventory.RUnlock()
 
 		Inventory.Item1.Select.Disable()
@@ -191,9 +191,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				dialog.NewConfirm("Recheck Assets", "Would you like to recheck wallet for Duel assets?", func(b bool) {
 					if b {
 						Inventory.ClearAll()
-						character_cont.Objects[0] = container.NewCenter(character)
-						item1_cont.Objects[1] = container.NewCenter(item1)
-						item2_cont.Objects[1] = container.NewCenter(item2)
+						character_cont.Objects[0].(*fyne.Container).Objects[0] = character
+						item1_cont.Objects[1].(*fyne.Container).Objects[0] = item1
+						item2_cont.Objects[1].(*fyne.Container).Objects[0] = item2
 						checkNFAs("Duels", false, nil)
 					}
 				}, d.Window).Show()
@@ -337,7 +337,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				defer Duels.RUnlock()
 				o.(*fyne.Container).Objects[2].(*fyne.Container).Objects[1].(*widget.Label).SetText(fmt.Sprintf("Duelist: %s %s", Duels.Index[id].Duelist.Address, Leaders.getRecordByAddress(Duels.Index[id].Duelist.Address)))
 
-				if Duels.Index[id].Num != "" && !Duels.Index[id].Complete {
+				if Duels.Index[id].Num != "" && !Duels.Index[id].Complete && o.(*fyne.Container).Objects[1].(*widget.Label).Text == "" {
 					o.(*fyne.Container).Objects[2].(*fyne.Container).Objects[0].(*widget.Label).SetText(Duels.Index[id].Duelist.getRankString())
 					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(fmt.Sprintf("Duel #%s   Rank: (R%d)   Amount: (%s %s)   Items: (%d)   Death Match: (%s)   Hardcore: (%s)", Duels.Index[id].Num, Duels.Index[id].getDuelistRank(), rpc.FromAtomic(Duels.Index[id].Amt, 5), Duels.Index[id].assetName(), Duels.Index[id].Items, Duels.Index[id].DM, Duels.Index[id].Rule))
 
@@ -353,14 +353,14 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1] = Duels.Index[id].Duelist.IconImage(0, 1)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2] = layout.NewSpacer()
-						o.Refresh()
+						//o.Refresh()
 						return
 					}
 
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1] = layout.NewSpacer()
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2] = layout.NewSpacer()
-					o.Refresh()
+					//o.Refresh()
 				}
 			}()
 		})
@@ -669,7 +669,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 				Duels.RLock()
 				defer Duels.RUnlock()
-				if Duels.Index[id].Opponent.Char != "" {
+				if Duels.Index[id].Opponent.Char != "" && o.(*fyne.Container).Objects[1].(*widget.Label).Text == "" {
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*widget.Label).SetText(chopAddr(Duels.Index[id].Duelist.Address))
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Duelist.getRankString())
 
@@ -816,7 +816,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 				Graveyard.RLock()
 				defer Graveyard.RUnlock()
-				if Graveyard.Index[id].Char != "" {
+				if Graveyard.Index[id].Char != "" && o.(*fyne.Container).Objects[1].(*widget.Label).Text == "" {
 					now := time.Now()
 					avail := time.Unix(Graveyard.Index[id].Time, 0)
 
@@ -961,7 +961,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 				Duels.RLock()
 				defer Duels.RUnlock()
-				if Duels.Index[id].Complete && Duels.Index[id].Opponent.Char != "" {
+				if Duels.Index[id].Complete && Duels.Index[id].Opponent.Char != "" && o.(*fyne.Container).Objects[1].(*widget.Label).Text == "" {
 					var arrow fyne.CanvasObject
 					if Duels.Index[id].Odds < 475 {
 						arrow = bundle.LeftArrow(fyne.NewSize(80, 80))
@@ -1330,9 +1330,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			case <-d.Receive():
 				if !rpc.Wallet.IsConnected() || !rpc.Daemon.IsConnected() {
 					start_duel.Hide()
-					character_cont.Objects[0] = container.NewCenter(character)
-					item1_cont.Objects[1] = container.NewCenter(item1)
-					item2_cont.Objects[1] = container.NewCenter(item2)
+					character_cont.Objects[0].(*fyne.Container).Objects[0] = character
+					item1_cont.Objects[1].(*fyne.Container).Objects[0] = item1
+					item2_cont.Objects[1].(*fyne.Container).Objects[0] = item2
 
 					max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
 					max.Objects[0].(*container.Split).Trailing.Refresh()
