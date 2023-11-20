@@ -335,11 +335,13 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 				Duels.RLock()
 				defer Duels.RUnlock()
-				o.(*fyne.Container).Objects[2].(*fyne.Container).Objects[1].(*widget.Label).SetText(fmt.Sprintf("Duelist: %s %s", Duels.Index[id].Duelist.Address, Leaders.getRecordByAddress(Duels.Index[id].Duelist.Address)))
 
-				if Duels.Index[id].Num != "" && !Duels.Index[id].Complete && o.(*fyne.Container).Objects[1].(*widget.Label).Text == "" {
+				header := fmt.Sprintf("Duel #%s   Rank: (R%d)   Amount: (%s %s)   Items: (%d)   Death Match: (%s)   Hardcore: (%s)", Duels.Index[id].Num, Duels.Index[id].getDuelistRank(), rpc.FromAtomic(Duels.Index[id].Amt, 5), Duels.Index[id].assetName(), Duels.Index[id].Items, Duels.Index[id].DM, Duels.Index[id].Rule)
+
+				if Duels.Index[id].Num != "" && !Duels.Index[id].Complete && o.(*fyne.Container).Objects[1].(*widget.Label).Text != header {
+					o.(*fyne.Container).Objects[2].(*fyne.Container).Objects[1].(*widget.Label).SetText(fmt.Sprintf("Duelist: %s %s", Duels.Index[id].Duelist.Address, Leaders.getRecordByAddress(Duels.Index[id].Duelist.Address)))
 					o.(*fyne.Container).Objects[2].(*fyne.Container).Objects[0].(*widget.Label).SetText(Duels.Index[id].Duelist.getRankString())
-					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(fmt.Sprintf("Duel #%s   Rank: (R%d)   Amount: (%s %s)   Items: (%d)   Death Match: (%s)   Hardcore: (%s)", Duels.Index[id].Num, Duels.Index[id].getDuelistRank(), rpc.FromAtomic(Duels.Index[id].Amt, 5), Duels.Index[id].assetName(), Duels.Index[id].Items, Duels.Index[id].DM, Duels.Index[id].Rule))
+					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(header)
 
 					if Duels.Index[id].Items > 1 {
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
@@ -353,14 +355,14 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1] = Duels.Index[id].Duelist.IconImage(0, 1)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2] = layout.NewSpacer()
-						//o.Refresh()
+						o.Refresh()
 						return
 					}
 
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1] = layout.NewSpacer()
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2] = layout.NewSpacer()
-					//o.Refresh()
+					o.Refresh()
 				}
 			}()
 		})
@@ -669,14 +671,16 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 				Duels.RLock()
 				defer Duels.RUnlock()
-				if Duels.Index[id].Opponent.Char != "" && o.(*fyne.Container).Objects[1].(*widget.Label).Text == "" {
+
+				header := fmt.Sprintf("Duel #%s   Pot: (%s %s)   Items: (%d)   Death Match: (%s)", Duels.Index[id].Num, rpc.FromAtomic(Duels.Index[id].Amt*2, 5), Duels.Index[id].assetName(), Duels.Index[id].Items, Duels.Index[id].DM)
+				if Duels.Index[id].Opponent.Char != "" && o.(*fyne.Container).Objects[1].(*widget.Label).Text != header {
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*widget.Label).SetText(chopAddr(Duels.Index[id].Duelist.Address))
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Duelist.getRankString())
 
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*widget.Label).SetText(chopAddr(Duels.Index[id].Opponent.Address))
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Opponent.getRankString())
 
-					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(fmt.Sprintf("Duel #%s   Pot: (%s %s)   Items: (%d)   Death Match: (%s)", Duels.Index[id].Num, rpc.FromAtomic(Duels.Index[id].Amt*2, 5), Duels.Index[id].assetName(), Duels.Index[id].Items, Duels.Index[id].DM))
+					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(header)
 
 					o.(*fyne.Container).Objects[2].(*widget.Label).SetText(fmt.Sprintf("Ready for: %v", Duels.Index[id].readySince()))
 
@@ -711,7 +715,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 0)
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = layout.NewSpacer()
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = layout.NewSpacer()
-
 					o.Refresh()
 				}
 			}()
@@ -816,20 +819,23 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 				Graveyard.RLock()
 				defer Graveyard.RUnlock()
-				if Graveyard.Index[id].Char != "" && o.(*fyne.Container).Objects[1].(*widget.Label).Text == "" {
+
+				sc_label := fmt.Sprintf("SCID: %s", Graveyard.Index[id].Char)
+
+				if Graveyard.Index[id].Char != "" && o.(*fyne.Container).Objects[2].(*widget.Label).Text != sc_label {
 					now := time.Now()
 					avail := time.Unix(Graveyard.Index[id].Time, 0)
 
-					var text string
+					var header string
 					if now.Unix() >= avail.Unix() {
-						text = fmt.Sprintf("Grave #%d   %s  -  Amount: (%s %s)   Available: (Yes)   Time in Grave: (%s)", id, menu.GetNFAName(Graveyard.Index[id].Char), rpc.FromAtomic(Graveyard.Index[id].findDiscount(), 5), Graveyard.Index[id].assetName(), formatDuration(time.Since(avail)))
+						header = fmt.Sprintf("Grave #%d   %s  -  Amount: (%s %s)   Available: (Yes)   Time in Grave: (%s)", id, menu.GetNFAName(Graveyard.Index[id].Char), rpc.FromAtomic(Graveyard.Index[id].findDiscount(), 5), Graveyard.Index[id].assetName(), formatDuration(time.Since(avail)))
 					} else {
 						left := time.Until(avail)
-						text = fmt.Sprintf("Grave #%d   %s  -  Amount: (%s %s)   Available in: (%s)", id, menu.GetNFAName(Graveyard.Index[id].Char), rpc.FromAtomic(Graveyard.Index[id].findDiscount(), 5), Graveyard.Index[id].assetName(), formatDuration(left))
+						header = fmt.Sprintf("Grave #%d   %s  -  Amount: (%s %s)   Available in: (%s)", id, menu.GetNFAName(Graveyard.Index[id].Char), rpc.FromAtomic(Graveyard.Index[id].findDiscount(), 5), Graveyard.Index[id].assetName(), formatDuration(left))
 					}
 
-					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(text)
-					o.(*fyne.Container).Objects[2].(*widget.Label).SetText(fmt.Sprintf("SCID: %s", Graveyard.Index[id].Char))
+					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(header)
+					o.(*fyne.Container).Objects[2].(*widget.Label).SetText(sc_label)
 
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Graveyard.Index[id].IconImage(0)
 					o.Refresh()
@@ -961,7 +967,10 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 				Duels.RLock()
 				defer Duels.RUnlock()
-				if Duels.Index[id].Complete && Duels.Index[id].Opponent.Char != "" && o.(*fyne.Container).Objects[1].(*widget.Label).Text == "" {
+
+				header := Duels.Index[id].resultsHeaderString()
+
+				if Duels.Index[id].Complete && Duels.Index[id].Opponent.Char != "" && o.(*fyne.Container).Objects[1].(*widget.Label).Text != header {
 					var arrow fyne.CanvasObject
 					if Duels.Index[id].Odds < 475 {
 						arrow = bundle.LeftArrow(fyne.NewSize(80, 80))
@@ -972,7 +981,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = arrow
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].endedIn())
 
-					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].resultsHeaderString())
+					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(header)
 					o.(*fyne.Container).Objects[2].(*widget.Label).SetText(fmt.Sprintf("Winner: %s %s", chopAddr(Duels.Index[id].Winner), Leaders.getRecordByAddress(Duels.Index[id].Winner)))
 
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*widget.Label).SetText(Duels.Index[id].Duelist.findDuelResult())

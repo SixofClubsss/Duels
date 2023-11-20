@@ -105,6 +105,8 @@ func GetGraveyard() {
 									Time:  int64(time[0]),
 									Icon:  img,
 								}
+
+								Graveyard.SortIndex(false)
 							}
 						}
 
