@@ -560,7 +560,7 @@ func processReady() {
 				for retry < 4 {
 					tx := Duels.Index[u].refDuel()
 					time.Sleep(time.Second)
-					retry += rpc.ConfirmTxRetry(tx, "refService", 45)
+					retry += rpc.ConfirmTxRetry(tx, "refService", 60)
 				}
 			} else {
 				for time.Now().Unix() < stamp {
@@ -572,7 +572,7 @@ func processReady() {
 				for retry < 4 {
 					tx := Duels.Index[u].refDuel()
 					time.Sleep(time.Second)
-					retry += rpc.ConfirmTxRetry(tx, "refService", 45)
+					retry += rpc.ConfirmTxRetry(tx, "refService", 60)
 				}
 			}
 		}

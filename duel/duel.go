@@ -1156,7 +1156,7 @@ func claimClaimable(claimable []string, d *dreams.AppObject) {
 			progress_label.SetText(fmt.Sprintf("Claiming: %s\n\nPlease wait for TX to be confirmed", claim))
 			tx := rpc.ClaimNFA(claim)
 			time.Sleep(time.Second)
-			retry += rpc.ConfirmTxRetry(tx, "checkClaimable", 45)
+			retry += rpc.ConfirmTxRetry(tx, "checkClaimable", 60)
 
 			retry++
 

@@ -254,6 +254,9 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 			case "High Strangeness":
 				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, rank), owner)
 				go Inventory.AddCharToInventory(header)
+			case "Death By Cupcake":
+				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, rank), owner)
+				go Inventory.AddCharToInventory(header)
 			}
 		}
 	}
