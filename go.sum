@@ -78,8 +78,8 @@ github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghf
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
-github.com/civilware/Gnomon v0.0.0-20231106154043-ce6788ad1514 h1:lJM1JdfeCcscBJC2mOqS/Shog3dcQZtXc9L+MzW8jDY=
-github.com/civilware/Gnomon v0.0.0-20231106154043-ce6788ad1514/go.mod h1:0Aw1IosHn2r4olpU3OWfUlXhZijFtFV9UeHkzytYfTQ=
+github.com/civilware/Gnomon v0.0.0-20231122200651-d74a0cfd22ca h1:TSwn1Xr2lThESmzBygkYkKA+VbfQVOXdKMo0hSIUAps=
+github.com/civilware/Gnomon v0.0.0-20231122200651-d74a0cfd22ca/go.mod h1:0Aw1IosHn2r4olpU3OWfUlXhZijFtFV9UeHkzytYfTQ=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
@@ -90,10 +90,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.0/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsr
 github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creachadair/jrpc2 v0.43.0 h1:sgYSOoAWXZ5cx9pd2pYH8dkrjCNdDpFwhO4ucMeUz7U=
 github.com/creachadair/jrpc2 v0.43.0/go.mod h1:oOdNFoMQQpSirGcSujG10NYl05K/IYrIUUNbh+/Xcd8=
-github.com/dReam-dApps/dReams v0.10.2-0.20231112181331-fac4358d8879 h1:cO8CuM8UZGo4ige5pK6Lgb0G4rE7/sRMQY7RGJZqKbc=
-github.com/dReam-dApps/dReams v0.10.2-0.20231112181331-fac4358d8879/go.mod h1:by67djU3Le23uqOAODN7HgbMBhugzR7veBk30laWsjI=
-github.com/dReam-dApps/dReams v0.10.2-0.20231115232502-4a3694859b3b h1:dyGm3J7cDqJvJjhvsI4lQ4rJydbePsEzXkB5wkTKUW4=
-github.com/dReam-dApps/dReams v0.10.2-0.20231115232502-4a3694859b3b/go.mod h1:by67djU3Le23uqOAODN7HgbMBhugzR7veBk30laWsjI=
+github.com/dReam-dApps/dReams v0.10.2-0.20231123170605-513a3cbc29ed h1:rkZeNAYQ/vl7KjhGvBpb3gaB4Q/fvqvUL/4ZuF0qpVY=
+github.com/dReam-dApps/dReams v0.10.2-0.20231123170605-513a3cbc29ed/go.mod h1:Sukh1JVp+WWjN1n7eDtjrdudxr3yRXEAIpzYni1e9iU=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
