@@ -71,7 +71,7 @@ func StartDuel(amt, items, rule, dm, op uint64, char, item1, item2, token string
 		t = append(t, t3)
 	}
 
-	fee := rpc.GasEstimate(DUELSCID, "[StartDuel]", args, t, rpc.LowLimitFee)
+	fee := rpc.GasEstimate(DUELSCID, "[Duels]", args, t, rpc.LowLimitFee)
 	params := &dero.Transfer_Params{
 		Transfers: t,
 		SC_ID:     DUELSCID,
@@ -81,12 +81,11 @@ func StartDuel(amt, items, rule, dm, op uint64, char, item1, item2, token string
 	}
 
 	if err := rpcClientW.CallFor(ctx, &txid, "transfer", params); err != nil {
-		logger.Errorln("[StartDuel]", err)
+		rpc.PrintError("[Duels] Start: %s", err)
 		return
 	}
 
-	logger.Println("[StartDuel] Start TX:", txid)
-	rpc.AddLog("Start Duel TX: " + txid.TXID)
+	rpc.PrintLog("[Duels] Start TX: %s", txid)
 }
 
 // Accept joinable duel
@@ -145,7 +144,7 @@ func (duel entry) AcceptDuel(items, op uint64, char, item1, item2 string) {
 
 		t = append(t, t3)
 	}
-	fee := rpc.GasEstimate(DUELSCID, "[AcceptDuel]", args, t, rpc.LowLimitFee)
+	fee := rpc.GasEstimate(DUELSCID, "[Duels]", args, t, rpc.LowLimitFee)
 	params := &dero.Transfer_Params{
 		Transfers: t,
 		SC_ID:     DUELSCID,
@@ -155,12 +154,11 @@ func (duel entry) AcceptDuel(items, op uint64, char, item1, item2 string) {
 	}
 
 	if err := rpcClientW.CallFor(ctx, &txid, "transfer", params); err != nil {
-		logger.Errorln("[AcceptDuel]", err)
+		rpc.PrintError("[Duels] Accept: %s", err)
 		return
 	}
 
-	logger.Println("[AcceptDuel] Accept TX:", txid)
-	rpc.AddLog("Accept Duel TX: " + txid.TXID)
+	rpc.PrintLog("[Duels] Accept TX: %s", txid)
 }
 
 // Ref a duel, need to be owner or a ref on SC to call
@@ -221,7 +219,7 @@ func (duel entry) ref(n, addr string, win rune, odds uint64) (tx string) {
 	}
 
 	txid := dero.Transfer_Result{}
-	fee := rpc.GasEstimate(DUELSCID, "[refDuel]", args, t, rpc.LowLimitFee)
+	fee := rpc.GasEstimate(DUELSCID, "[Duels]", args, t, rpc.LowLimitFee)
 	params := &dero.Transfer_Params{
 		Transfers: t,
 		SC_ID:     DUELSCID,
@@ -231,12 +229,11 @@ func (duel entry) ref(n, addr string, win rune, odds uint64) (tx string) {
 	}
 
 	if err := rpcClientW.CallFor(ctx, &txid, "transfer", params); err != nil {
-		logger.Errorln("[refDuel]", err)
+		rpc.PrintError("[Duels] Ref Duel: %s", err)
 		return
 	}
 
-	logger.Println("[refDuel] Ref Duel TX:", txid)
-	rpc.AddLog("Ref Duel TX: " + txid.TXID)
+	rpc.PrintLog("[Duels] Ref Duel TX: %s", txid)
 
 	return txid.TXID
 }
@@ -269,7 +266,7 @@ func (grave grave) Revive() (tx string) {
 
 	t := []dero.Transfer{t1}
 	txid := dero.Transfer_Result{}
-	fee := rpc.GasEstimate(DUELSCID, "[Revive]", args, t, rpc.LowLimitFee)
+	fee := rpc.GasEstimate(DUELSCID, "[Duels]", args, t, rpc.LowLimitFee)
 	params := &dero.Transfer_Params{
 		Transfers: t,
 		SC_ID:     DUELSCID,
@@ -279,12 +276,11 @@ func (grave grave) Revive() (tx string) {
 	}
 
 	if err := rpcClientW.CallFor(ctx, &txid, "transfer", params); err != nil {
-		logger.Errorln("[Revive]", err)
+		rpc.PrintError("[Duels] Revive: %s", err)
 		return
 	}
 
-	logger.Println("[Revive] Revive TX:", txid)
-	rpc.AddLog("Revive TX: " + txid.TXID)
+	rpc.PrintLog("[Duels] Revive TX: %s", txid)
 
 	return txid.TXID
 }
@@ -301,7 +297,7 @@ func Refund(n string) {
 
 	t := []dero.Transfer{}
 	txid := dero.Transfer_Result{}
-	fee := rpc.GasEstimate(DUELSCID, "[Refund]", args, t, rpc.LowLimitFee)
+	fee := rpc.GasEstimate(DUELSCID, "[Duels]", args, t, rpc.LowLimitFee)
 	params := &dero.Transfer_Params{
 		Transfers: t,
 		SC_ID:     DUELSCID,
@@ -311,10 +307,9 @@ func Refund(n string) {
 	}
 
 	if err := rpcClientW.CallFor(ctx, &txid, "transfer", params); err != nil {
-		logger.Errorln("[Refund]", err)
+		rpc.PrintError("[Duels] Refund: %s", err)
 		return
 	}
 
-	logger.Printf("[Refund] Refund TX: %s\n", txid)
-	rpc.AddLog("Refund TX: " + txid.TXID)
+	rpc.PrintLog("[Duels] Refund TX: %s", txid)
 }

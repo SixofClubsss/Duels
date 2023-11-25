@@ -23,7 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const app_tag = "Asset Duels"
+const app_tag = "Duels"
 
 // Start Asset Duels as a stand alone app to be locally ran or imported and ran
 func StartApp() {
@@ -100,7 +100,6 @@ func StartApp() {
 
 	// Main routine
 	go func() {
-		logger.Printf("[%s] %s %s %s", app_tag, rpc.DREAMSv, runtime.GOOS, runtime.GOARCH)
 		synced := false
 		time.Sleep(3 * time.Second)
 		ticker := time.NewTicker(3 * time.Second)
@@ -177,7 +176,7 @@ func StartApp() {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Duels", LayoutAllItems(menu.Assets.Asset_map, &d)),
 		container.NewTabItem("Assets", menu.PlaceAssets(app_tag, nil, bundle.ResourceMarketIconPng, w)),
-		container.NewTabItem("Log", rpc.SessionLog()))
+		container.NewTabItem("Log", rpc.SessionLog(app_tag)))
 
 	tabs.SetTabLocation(container.TabLocationBottom)
 
