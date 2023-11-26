@@ -15,6 +15,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"github.com/blang/semver/v4"
 	dreams "github.com/dReam-dApps/dReams"
 	"github.com/dReam-dApps/dReams/bundle"
 	"github.com/dReam-dApps/dReams/dwidget"
@@ -24,6 +25,8 @@ import (
 )
 
 const app_tag = "Duels"
+
+var version = semver.MustParse("0.1.0-dev")
 
 // Start Asset Duels as a stand alone app to be locally ran or imported and ran
 func StartApp() {
@@ -176,7 +179,7 @@ func StartApp() {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Duels", LayoutAllItems(menu.Assets.Asset_map, &d)),
 		container.NewTabItem("Assets", menu.PlaceAssets(app_tag, nil, bundle.ResourceMarketIconPng, w)),
-		container.NewTabItem("Log", rpc.SessionLog(app_tag)))
+		container.NewTabItem("Log", rpc.SessionLog(app_tag, version)))
 
 	tabs.SetTabLocation(container.TabLocationBottom)
 

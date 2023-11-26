@@ -93,8 +93,7 @@ func RunRefService() {
 	n := runtime.NumCPU()
 	runtime.GOMAXPROCS(n)
 
-	version := rpc.DREAMSv
-	arguments, err := docopt.ParseArgs(command_line, nil, version)
+	arguments, err := docopt.ParseArgs(command_line, nil, rpc.Version().String())
 
 	if err != nil {
 		logger.Fatalf("Error while parsing arguments: %s\n", err)
