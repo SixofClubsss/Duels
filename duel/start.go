@@ -225,13 +225,7 @@ func checkNFAOwner(scid string) {
 			collection, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "collection")
 			if owner != nil && file != nil && collection != nil {
 				if owner[0] == rpc.Wallet.Address && menu.ValidNfa(file[0]) {
-					if collection[0] == "TestChars" {
-						menu.Assets.Add(header[0], scid)
-						AddItemsToInventory(scid, header[0], owner[0], collection[0])
-					} else if collection[0] == "TestItems" {
-						menu.Assets.Add(header[0], scid)
-						AddItemsToInventory(scid, header[0], owner[0], collection[0])
-					} else if collection[0] == "Dero Desperados" {
+					if collection[0] == "Dero Desperados" {
 						menu.Assets.Add(header[0], scid)
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					} else if collection[0] == "Desperado Guns" {

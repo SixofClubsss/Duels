@@ -100,7 +100,7 @@ func DreamsMenuIntro() (entries map[string][]string) {
 			"Game Modes",
 			"How to play"},
 
-		"Collections": {"Dero Desperados", "Desperados Guns", "More to come..."},
+		"Collections": {"Dero Desperados", "Desperados Guns", "High Strangeness", "Death By Cupcake", "More to come..."},
 
 		"Game Modes": {"Death match", "Hardcore"},
 
@@ -572,8 +572,8 @@ func (duel entry) assetName() (asset_name string) {
 
 // Check all assets used for duel are valid
 func (duel entry) validateCollection() bool {
-	characters := []string{"Dero Desperados", "TestChars"}
-	items := []string{"Desperado Guns", "TestItems"}
+	characters := []string{"Dero Desperados", "Death By Cupcake", "High Strangeness"}
+	items := []string{"Desperado Guns"}
 
 	switch duel.Items {
 	case 0:

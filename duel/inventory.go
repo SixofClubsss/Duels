@@ -230,23 +230,6 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 				Inventory.Item1.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
 				Inventory.Item2.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
 				go Inventory.AddItemToInventory(header)
-			case "TestChars":
-				if err := json.Unmarshal([]byte(rpc.HexToString(splitDesc[1])), &rank); err != nil {
-					logger.Errorln("[AddItemsToInventory]", err)
-					return
-				}
-
-				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
-				go Inventory.AddCharToInventory(header)
-			case "TestItems":
-				if err := json.Unmarshal([]byte(rpc.HexToString(splitDesc[1])), &rank); err != nil {
-					logger.Errorln("[AddItemsToInventory]", err)
-					return
-				}
-
-				Inventory.Item1.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
-				Inventory.Item2.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
-				go Inventory.AddItemToInventory(header)
 			}
 		} else {
 			rank := 1
