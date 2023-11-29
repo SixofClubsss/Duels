@@ -28,6 +28,11 @@ const app_tag = "Duels"
 
 var version = semver.MustParse("0.1.0-dev")
 
+// Check duel package version
+func Version() semver.Version {
+	return version
+}
+
 // Start Asset Duels as a stand alone app to be locally ran or imported and ran
 func StartApp() {
 	n := runtime.NumCPU()
