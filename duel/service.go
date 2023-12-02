@@ -149,7 +149,6 @@ func RunRefService() {
 
 	menu.InitLogrusLog(logrus.InfoLevel)
 
-	menu.Gnomes.Trim = true
 	menu.Gnomes.Fast = fastsync
 	menu.Gnomes.Para = parallel
 
