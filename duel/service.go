@@ -16,12 +16,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var command_line string = `runRefService
+var command_line string = `RefService
 App to run RefService as a single process, powered by Gnomon and dReams.
 
 Usage:
-  runRefService [options]
-  runRefService -h | --help
+  RefService [options]
+  RefService -h | --help
 
 Options:
   -h --help                      Show this screen.
@@ -151,19 +151,20 @@ func RunRefService() {
 
 	menu.Gnomes.Fast = fastsync
 	menu.Gnomes.Para = parallel
+	menu.Gnomes.DBType = "boltdb"
 
-	logger.Println("[runRefService]", version, runtime.GOOS, runtime.GOARCH)
+	logger.Println("[RefService]", version, runtime.GOOS, runtime.GOARCH)
 
 	// Check for daemon connection
 	rpc.Ping()
 	if !rpc.Daemon.Connect {
-		logger.Fatalf("[runRefService] Daemon %s not connected\n", rpc.Daemon.Rpc)
+		logger.Fatalf("[RefService] Daemon %s not connected\n", rpc.Daemon.Rpc)
 	}
 
 	// Check for wallet connection
-	rpc.GetAddress("runRefService")
+	rpc.GetAddress("RefService")
 	if !rpc.Wallet.Connect {
-		os.Exit(1)
+		logger.Fatalf("[RefService] Wallet %s not connected\n", rpc.Wallet.Rpc)
 	}
 
 	// Handle ctrl-c close
@@ -172,14 +173,14 @@ func RunRefService() {
 	go func() {
 		<-c
 		fmt.Println()
-		menu.Gnomes.Stop("runRefService")
+		menu.Gnomes.Stop("RefService")
 		rpc.Wallet.Connected(false)
 		Service.Stop()
 		for Service.IsProcessing() {
-			logger.Println("[runRefService] Waiting for service to close")
+			logger.Println("[RefService] Waiting for service to close")
 			time.Sleep(3 * time.Second)
 		}
-		logger.Println("[runRefService] Closing")
+		logger.Println("[RefService] Closing")
 		os.Exit(0)
 	}()
 
@@ -190,7 +191,7 @@ func RunRefService() {
 	menu.Control.Contract_rating = make(map[string]uint64)
 
 	// Start Gnomon with search filters
-	go menu.StartGnomon("runRefService", "boltdb", filter, 0, 0, nil)
+	go menu.StartGnomon("RefService", menu.Gnomes.DBType, filter, 0, 0, nil)
 
 	// Routine for checking daemon, wallet connection and Gnomon sync
 	go func() {
@@ -198,10 +199,10 @@ func RunRefService() {
 			time.Sleep(time.Second)
 		}
 
-		logger.Println("[runRefService] Starting when Gnomon is synced")
+		logger.Println("[RefService] Starting when Gnomon is synced")
 		for menu.Gnomes.IsRunning() && rpc.IsReady() {
 			rpc.Ping()
-			rpc.EchoWallet("runRefService")
+			rpc.EchoWallet("RefService")
 			menu.Gnomes.IndexContains()
 			if menu.Gnomes.Indexer.LastIndexedHeight >= menu.Gnomes.Indexer.ChainHeight-3 && menu.Gnomes.HasIndex(1) {
 				menu.Gnomes.Synced(true)
@@ -210,7 +211,7 @@ func RunRefService() {
 				if !menu.Gnomes.Start && menu.Gnomes.IsInitialized() {
 					diff := menu.Gnomes.Indexer.ChainHeight - menu.Gnomes.Indexer.LastIndexedHeight
 					if diff > 3 {
-						logger.Printf("[runRefService] Gnomon has %d blocks to go\n", diff)
+						logger.Printf("[RefService] Gnomon has %d blocks to go\n", diff)
 					}
 				}
 			}
@@ -234,17 +235,17 @@ func RunRefService() {
 // Main RefService process
 func refService() {
 	if rpc.IsReady() {
-		logger.Println("[RefService] Initializing")
+		logger.Println("[refService] Initializing")
 		for i := 5; i > 0; i-- {
 			if !Service.IsRunning() {
 				break
 			}
-			logger.Println("[RefService] Starting in", i)
+			logger.Println("[refService] Starting in", i)
 			time.Sleep(time.Second)
 		}
 
 		if Service.IsRunning() {
-			logger.Println("[RefService] Starting")
+			logger.Println("[refService] Starting")
 		}
 
 		for Service.IsRunning() && rpc.IsReady() {
@@ -253,6 +254,7 @@ func refService() {
 			refGetAllDuels()
 			GetFinals()
 			processReady()
+			logger.Debugln("[refService] Joins:", len(Joins.All), Joins.All, "Ready:", len(Ready.All), Ready.All, "Finals:", len(Finals.All), Finals.All)
 
 			if !menu.Gnomes.IsClosing() {
 				storeIndex()
@@ -266,9 +268,9 @@ func refService() {
 			}
 		}
 		Service.SetProcessing(false)
-		logger.Println("[RefService] Shutting down")
+		logger.Println("[refService] Shutting down")
 
-		logger.Println("[RefService] Done")
+		logger.Println("[refService] Done")
 	}
 	Service.Stop()
 }
@@ -537,8 +539,6 @@ func refGetAllDuels() {
 			}
 		}
 	}
-
-	logger.Debugln("[refGetAllDuels] Joins:", len(Joins.All), Joins.All, "Ready:", len(Ready.All), Ready.All, "Finals:", len(Finals.All), Finals.All)
 }
 
 // Process any Duels that are ready for Ref, will retry any failed ref() txs up to 4 times

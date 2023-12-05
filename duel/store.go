@@ -65,6 +65,7 @@ func storeIndex() (err error) {
 func getIndex() (stored entries) {
 	stored.Index = make(map[uint64]entry)
 	if menu.Gnomes.DBType != "boltdb" {
+		logger.Errorln("[getIndex] DB not boltdb")
 		return
 	}
 
@@ -97,6 +98,7 @@ func getIndex() (stored entries) {
 // Delete stored duel index from boltdb
 func deleteIndex() {
 	if menu.Gnomes.DBType != "boltdb" {
+		logger.Errorln("[deleteIndex] DB not boltdb")
 		return
 	}
 

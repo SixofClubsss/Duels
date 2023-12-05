@@ -76,6 +76,7 @@ func GetGraveyard() {
 			Graveyard.Lock()
 			defer Graveyard.Unlock()
 			for _, h := range info {
+				updateSyncProgress(sync_prog)
 				if str, ok := h.Key.(string); ok {
 					split := strings.Split(str, "_")
 					switch split[0] {

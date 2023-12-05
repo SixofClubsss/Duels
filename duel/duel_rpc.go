@@ -8,7 +8,8 @@ import (
 	dero "github.com/deroproject/derohe/rpc"
 )
 
-// const DUELSCID = "afde05dd953c0077a9f04dceb2c1b4c58b5153043e67ebef7cf767b63327eac8"
+// const DUELSCID = "afde05dd953c0077a9f04dceb2c1b4c58b5153043e67ebef7cf767b63327eac8" // test SC
+
 const DUELSCID = "d455bd7567453a1c11177b7a3bc58ed36aa8ead4503587bb8d86c7f308a91bdf"
 
 // Start a duel

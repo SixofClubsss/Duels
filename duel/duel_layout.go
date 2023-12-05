@@ -32,6 +32,7 @@ type searching struct {
 }
 
 var search searching
+var sync_prog *widget.ProgressBar
 
 // Layout all duel items
 func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObject {
@@ -1074,15 +1075,17 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 	top_label := container.NewHBox(D.LeftLabel, layout.NewSpacer(), D.RightLabel)
 
-	boot_label := dwidget.NewCenterLabel("Connect to Daemon and Wallet to sync")
-	boot_prog := widget.NewProgressBar()
-	boot_prog.Min = 0
-	boot_prog.Max = 4
-	boot_spacer := canvas.NewRectangle(color.RGBA{0, 0, 0, 0})
-	boot_spacer.SetMinSize(fyne.NewSize(equip_cont.Size().Width, 0))
-	boot_cont := container.NewVBox(boot_prog, boot_spacer, boot_label)
+	sync_label := dwidget.NewCenterLabel("Connect to Daemon and Wallet to sync")
+	sync_prog = widget.NewProgressBar()
+	sync_prog.Min = 0
+	sync_prog.Max = 50
+	sync_spacer := canvas.NewRectangle(color.RGBA{0, 0, 0, 0})
+	sync_spacer.SetMinSize(fyne.NewSize(450, 0))
+	sync_img := canvas.NewImageFromResource(ResourceDuelCirclePng)
+	sync_img.SetMinSize(fyne.NewSize(200, 200))
+	sync_cont := container.NewStack(container.NewCenter(container.NewBorder(sync_spacer, sync_label, nil, nil, container.NewCenter(sync_img))), sync_prog)
 
-	max = container.NewStack(container.NewHSplit(container.NewCenter(boot_cont), container.NewStack(bundle.NewAlpha120(), tabs)))
+	max = container.NewStack(container.NewHSplit(container.NewStack(sync_cont), container.NewStack(bundle.NewAlpha120(), tabs)))
 	max.Objects[0].(*container.Split).SetOffset(0)
 
 	// Start a duel form
@@ -1346,30 +1349,44 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
 					max.Objects[0].(*container.Split).Trailing.Refresh()
 
+					sync_label.SetText("Connect to Daemon and Wallet to sync")
+					max.Objects[0].(*container.Split).Leading.(*fyne.Container).Objects[0] = container.NewStack(sync_cont)
+					max.Objects[0].(*container.Split).Leading.Refresh()
+
 					Disconnected()
 					Inventory.Character.ClearAll()
 					Inventory.Item1.ClearAll()
 					Inventory.Item2.ClearAll()
 					synced = false
+					loaded = false
 					d.WorkDone()
 					continue
 				}
 
 				if !synced && menu.GnomonScan(d.IsConfiguring()) {
-					boot_label.SetText("Creating Duels Index, this may take a few minutes to complete")
+					sync_label.SetText("Creating duels index, this may take a few minutes to complete")
 					logger.Println("[Duels] Syncing")
 					Duels = getIndex()
 					synced = true
 				}
 
 				if synced {
+					if !loaded {
+						if r, ok := rpc.FindStringKey(DUELSCID, "rds", rpc.Daemon.Rpc).(float64); ok {
+							sync_prog.Max = r + 1
+						} else {
+							sync_prog.Max = 50
+						}
+					}
+
 					if GetJoins() {
 						Joins.List.Refresh()
 					}
 
 					if !loaded {
-						boot_prog.SetValue(1)
-						boot_prog.Refresh()
+						sync_prog.SetValue(0)
+						sync_prog.Max = float64(len(Duels.Index))
+						sync_label.SetText("Matching opponents, this may take a few minutes to complete")
 					}
 
 					if GetAllDuels() {
@@ -1377,8 +1394,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					}
 
 					if !loaded {
-						boot_prog.SetValue(2)
-						boot_prog.Refresh()
+						sync_prog.SetValue(0)
+						sync_prog.Max = float64(len(Duels.Index)) + 1
+						sync_label.SetText("Getting results, this may take a few minutes to complete")
 					}
 
 					if GetFinals() {
@@ -1386,8 +1404,15 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					}
 
 					if !loaded {
-						boot_prog.SetValue(3)
-						boot_prog.Refresh()
+						sync_prog.SetValue(0)
+						sync_label.SetText("Getting graves, this may take a few minutes to complete")
+						if menu.Gnomes.IsReady() {
+							info := menu.Gnomes.GetAllSCIDVariableDetails(DUELSCID)
+							sync_prog.Max = float64(len(info)) + 1
+						} else {
+							sync_prog.Max = float64(400)
+						}
+
 					}
 
 					GetGraveyard()
@@ -1398,9 +1423,10 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					}
 
 					if !loaded {
-						boot_label.SetText("")
-						boot_prog.SetValue(4)
-						boot_prog.Refresh()
+						sync_label.SetText("")
+						sync_prog.Max = 1
+						sync_prog.SetValue(0)
+						sync_prog.Refresh()
 						loaded = true
 						max.Objects[0].(*container.Split).Leading.(*fyne.Container).Objects[0] = container.NewCenter(equip_cont)
 						max.Objects[0].(*container.Split).Leading.Refresh()
@@ -1424,6 +1450,15 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	}()
 
 	return container.NewBorder(dwidget.LabelColor(top_label), nil, nil, nil, max)
+}
+
+// Update ui progress bar when syncing
+func updateSyncProgress(bar *widget.ProgressBar) {
+	if bar != nil && bar.Max > 1 {
+		if bar.Value < bar.Max {
+			bar.SetValue(bar.Value + bar.Max/bar.Max)
+		}
+	}
 }
 
 // Search bar widget for duels

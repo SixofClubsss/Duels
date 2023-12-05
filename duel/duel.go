@@ -212,6 +212,8 @@ func GetJoins() (update bool) {
 					break
 				}
 
+				updateSyncProgress(sync_prog)
+
 				e := Duels.SingleEntry(u)
 
 				n := strconv.Itoa(int(u))
@@ -386,6 +388,8 @@ func GetAllDuels() (update bool) {
 				break
 			}
 
+			updateSyncProgress(sync_prog)
+
 			if v.Opponent.Char != "" {
 				if Ready.ExistsIndex(u) {
 					logger.Debugf("[GetAllDuels] %d b Char already here\n", u)
@@ -519,6 +523,8 @@ func GetFinals() (update bool) {
 			if !rpc.Wallet.IsConnected() || !menu.Gnomes.IsReady() {
 				break
 			}
+
+			updateSyncProgress(sync_prog)
 
 			n := strconv.Itoa(int(u))
 			if !v.Complete {
