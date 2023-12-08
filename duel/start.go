@@ -2,6 +2,7 @@ package duel
 
 import (
 	"fmt"
+	"image/color"
 	"os"
 	"os/signal"
 	"runtime"
@@ -13,6 +14,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/widget"
 	"github.com/blang/semver/v4"
 	dreams "github.com/dReam-dApps/dReams"
 	"github.com/dReam-dApps/dReams/bundle"
@@ -179,7 +181,7 @@ func StartApp() {
 
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Duels", LayoutAllItems(menu.Assets.SCIDs, &d)),
-		container.NewTabItem("Assets", menu.PlaceAssets(app_tag, nil, nil, bundle.ResourceMarketIconPng, &d)),
+		container.NewTabItem("Assets", menu.PlaceAssets(app_tag, profile(), nil, bundle.ResourceMarketIconPng, &d)),
 		container.NewTabItem("Log", rpc.SessionLog(app_tag, version)))
 
 	tabs.SetTabLocation(container.TabLocationBottom)
@@ -250,4 +252,21 @@ func checkNFAOwner(scid string) {
 			}
 		}
 	}
+}
+
+// User profile layout with dreams.AssetSelects
+func profile() fyne.CanvasObject {
+	line := canvas.NewLine(bundle.TextColor)
+	form := []*widget.FormItem{}
+	form = append(form, widget.NewFormItem("Name", menu.NameEntry()))
+	form = append(form, widget.NewFormItem("", layout.NewSpacer()))
+	form = append(form, widget.NewFormItem("", container.NewVBox(line)))
+	form = append(form, widget.NewFormItem("Theme", menu.ThemeSelect()))
+	form = append(form, widget.NewFormItem("", layout.NewSpacer()))
+	form = append(form, widget.NewFormItem("", container.NewVBox(line)))
+
+	spacer := canvas.NewRectangle(color.Transparent)
+	spacer.SetMinSize(fyne.NewSize(450, 0))
+
+	return container.NewCenter(container.NewBorder(spacer, nil, nil, nil, widget.NewForm(form...)))
 }
