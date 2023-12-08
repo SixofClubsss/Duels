@@ -58,7 +58,7 @@ func StartApp() {
 	}
 
 	closeFunc := func() {
-		menu.CloseAppSignal(true)
+		menu.SetClose(true)
 		save := dreams.SaveData{
 			Skin:   config.Skin,
 			DBtype: gnomon.DBStorageType(),

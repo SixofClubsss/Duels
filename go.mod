@@ -6,11 +6,10 @@ require (
 	fyne.io/fyne/v2 v2.4.1
 	github.com/blang/semver/v4 v4.0.0
 	github.com/civilware/Gnomon v0.0.0-20231122200651-d74a0cfd22ca
-	github.com/dReam-dApps/dReams v0.10.2-0.20231202103657-9fb4a746fa6c
+	github.com/dReam-dApps/dReams v0.10.2-0.20231208231055-a8e891da8d6c
 	github.com/deroproject/derohe v0.0.0-20230604143809-765b2db1f482
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/sirupsen/logrus v1.9.3
-	go.etcd.io/bbolt v1.3.6
 )
 
 require (
@@ -68,6 +67,7 @@ require (
 	github.com/xtaci/kcp-go/v5 v5.6.3 // indirect
 	github.com/ybbus/jsonrpc/v3 v3.1.4 // indirect
 	github.com/yuin/goldmark v1.5.5 // indirect
+	go.etcd.io/bbolt v1.3.6 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
