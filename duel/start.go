@@ -5,8 +5,6 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-	"sort"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -19,6 +17,7 @@ import (
 	dreams "github.com/dReam-dApps/dReams"
 	"github.com/dReam-dApps/dReams/bundle"
 	"github.com/dReam-dApps/dReams/dwidget"
+	"github.com/dReam-dApps/dReams/gnomes"
 	"github.com/dReam-dApps/dReams/menu"
 	"github.com/dReam-dApps/dReams/rpc"
 	"github.com/sirupsen/logrus"
@@ -27,6 +26,7 @@ import (
 const app_tag = "Duels"
 
 var version = semver.MustParse("0.1.0-dev")
+var gnomon = gnomes.NewGnomes()
 
 // Check duel package version
 func Version() semver.Version {
@@ -37,7 +37,7 @@ func Version() semver.Version {
 func StartApp() {
 	n := runtime.NumCPU()
 	runtime.GOMAXPROCS(n)
-	menu.InitLogrusLog(logrus.InfoLevel)
+	gnomes.InitLogrusLog(logrus.InfoLevel)
 	config := menu.ReadDreamsConfig(app_tag)
 
 	a := app.NewWithID(fmt.Sprintf("%s Client", app_tag))
@@ -48,18 +48,18 @@ func StartApp() {
 	w.SetMaster()
 	done := make(chan struct{})
 
-	dreams.Theme.Img = *canvas.NewImageFromResource(nil)
+	menu.Theme.Img = *canvas.NewImageFromResource(nil)
 	d := dreams.AppObject{
 		App:        a,
 		Window:     w,
-		Background: container.NewStack(&dreams.Theme.Img),
+		Background: container.NewStack(&menu.Theme.Img),
 	}
 
 	closeFunc := func() {
 		menu.CloseAppSignal(true)
 		save := dreams.SaveData{
 			Skin:   config.Skin,
-			DBtype: menu.Gnomes.DBType,
+			DBtype: gnomon.DBStorageType(),
 		}
 
 		if rpc.Daemon.Rpc == "" {
@@ -69,7 +69,7 @@ func StartApp() {
 		}
 
 		menu.WriteDreamsConfig(save)
-		menu.Gnomes.Stop(app_tag)
+		gnomon.Stop(app_tag)
 		d.StopProcess()
 		w.Close()
 	}
@@ -84,12 +84,12 @@ func StartApp() {
 		closeFunc()
 	}()
 
-	menu.Gnomes.DBType = "boltdb"
-	menu.Gnomes.Fast = true
+	gnomon.SetDBStorageType("boltdb")
+	gnomon.SetFastsync(true)
 	rpc.InitBalances()
 	d.SetChannels(1)
 
-	menu.Assets.Asset_map = make(map[string]string)
+	menu.Assets.SCIDs = make(map[string]string)
 
 	// Create dwidget rpc connect box
 	connect_box := dwidget.NewHorizontalEntries(app_tag, 1)
@@ -101,8 +101,8 @@ func StartApp() {
 		rpc.Ping()
 
 		// Start Gnomon with search filters when connected to daemon
-		if rpc.Daemon.IsConnected() && !menu.Gnomes.IsInitialized() && !menu.Gnomes.Start {
-			go menu.StartGnomon(app_tag, menu.Gnomes.DBType, []string{rpc.GetSCCode(DUELSCID), menu.NFA_SEARCH_FILTER}, 0, 0, nil)
+		if rpc.Daemon.IsConnected() && !gnomon.IsInitialized() && !gnomon.IsStarting() {
+			go gnomes.StartGnomon(app_tag, gnomon.DBStorageType(), []string{rpc.GetSCCode(DUELSCID), gnomes.NFA_SEARCH_FILTER}, 0, 0, nil)
 		}
 	}
 
@@ -119,9 +119,9 @@ func StartApp() {
 				rpc.EchoWallet(app_tag)
 				go rpc.GetDreamsBalances(rpc.SCIDs)
 				rpc.GetWalletHeight(app_tag)
-				menu.GnomonEndPoint()
+				gnomes.GnomonEndPoint()
 
-				if rpc.Wallet.IsConnected() && menu.Gnomes.IsReady() {
+				if rpc.Wallet.IsConnected() && gnomon.IsReady() {
 					connect_box.RefreshBalance()
 					menu.DisableIndexControls(false)
 					if !synced {
@@ -129,28 +129,24 @@ func StartApp() {
 						synced = true
 					}
 				} else {
-					menu.Assets.Assets = []string{}
-					menu.Assets.Asset_list.Refresh()
-					menu.Control.Claim_button.Hide()
+					menu.Assets.Asset = []menu.Asset{}
+					menu.Assets.List.Refresh()
+					menu.Assets.Claim.Hide()
 					menu.DisableIndexControls(true)
 					synced = false
 				}
 
-				if menu.Gnomes.IsRunning() {
-					menu.Gnomes.IndexContains()
-					menu.Assets.Gnomes_index.Text = (" Indexed SCIDs: " + strconv.Itoa(int(menu.Gnomes.SCIDS)))
-					menu.Assets.Gnomes_index.Refresh()
-				} else {
-					menu.Assets.Gnomes_index.Text = (" Indexed SCIDs: 0")
-					menu.Assets.Gnomes_index.Refresh()
+				if gnomon.IsRunning() {
+					gnomon.IndexContains()
+					menu.Info.RefreshIndexed()
 				}
 
-				if menu.Gnomes.HasIndex(100) {
-					menu.Gnomes.Synced(true)
-					menu.Gnomes.Checked(true)
+				if gnomon.HasIndex(100) {
+					gnomon.Synced(true)
+					gnomon.Checked(true)
 				} else {
-					menu.Gnomes.Synced(false)
-					menu.Gnomes.Checked(false)
+					gnomon.Synced(false)
+					gnomon.Checked(false)
 					synced = false
 				}
 
@@ -171,7 +167,7 @@ func StartApp() {
 	// Gnomon shutdown on daemon disconnect
 	connect_box.Disconnect.OnChanged = func(b bool) {
 		if !b {
-			menu.Gnomes.Stop(app_tag)
+			gnomon.Stop(app_tag)
 		}
 	}
 
@@ -182,8 +178,8 @@ func StartApp() {
 	connect_box.Container.Objects[0].(*fyne.Container).Add(menu.StartIndicators())
 
 	tabs := container.NewAppTabs(
-		container.NewTabItem("Duels", LayoutAllItems(menu.Assets.Asset_map, &d)),
-		container.NewTabItem("Assets", menu.PlaceAssets(app_tag, nil, bundle.ResourceMarketIconPng, w)),
+		container.NewTabItem("Duels", LayoutAllItems(menu.Assets.SCIDs, &d)),
+		container.NewTabItem("Assets", menu.PlaceAssets(app_tag, nil, nil, bundle.ResourceMarketIconPng, &d)),
 		container.NewTabItem("Log", rpc.SessionLog(app_tag, version)))
 
 	tabs.SetTabLocation(container.TabLocationBottom)
@@ -199,48 +195,55 @@ func StartApp() {
 
 // Checks for valid duel NFAs, used only in stand alone version
 func checkNFAs(tag string, gc bool, scids map[string]string) {
-	if menu.Gnomes.IsReady() && !gc {
+	if gnomon.IsReady() && !gc {
 		if scids == nil {
-			scids = menu.Gnomes.GetAllOwnersAndSCIDs()
+			scids = gnomon.GetAllOwnersAndSCIDs()
 		}
 
-		menu.Assets.Assets = []string{}
+		menu.Assets.Asset = []menu.Asset{}
 		logger.Printf("[%s] Checking NFA Assets\n", tag)
 
 		for sc := range scids {
-			if !rpc.Wallet.IsConnected() || !menu.Gnomes.IsRunning() {
+			if !rpc.Wallet.IsConnected() || !gnomon.IsRunning() {
 				break
 			}
 
 			checkNFAOwner(sc)
 		}
 
-		sort.Strings(menu.Assets.Assets)
-		menu.Assets.Asset_list.Refresh()
+		menu.Assets.SortList()
+		menu.Assets.List.Refresh()
 		Inventory.SortAll()
 	}
 }
 
 // Checks for valid NFA owner and adds items to inventory, used only in stand alone version
 func checkNFAOwner(scid string) {
-	if menu.Gnomes.IsRunning() {
-		if header, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "nameHdr"); header != nil {
-			owner, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "owner")
-			file, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "fileURL")
-			collection, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "collection")
-			if owner != nil && file != nil && collection != nil {
+	if gnomon.IsRunning() {
+		if header, _ := gnomon.GetSCIDValuesByKey(scid, "nameHdr"); header != nil {
+			owner, _ := gnomon.GetSCIDValuesByKey(scid, "owner")
+			file, _ := gnomon.GetSCIDValuesByKey(scid, "fileURL")
+			collection, _ := gnomon.GetSCIDValuesByKey(scid, "collection")
+			icon, _ := gnomon.GetSCIDValuesByKey(scid, "iconURLHdr")
+			if owner != nil && file != nil && collection != nil && icon != nil {
 				if owner[0] == rpc.Wallet.Address && menu.ValidNFA(file[0]) {
+					var add menu.Asset
+					add.Name = header[0]
+					add.Collection = collection[0]
+					add.SCID = scid
+					add.Type = menu.AssetType(collection[0], "typeHdr")
+
 					if collection[0] == "Dero Desperados" {
-						menu.Assets.Add(header[0], scid)
+						menu.Assets.Add(add, icon[0])
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					} else if collection[0] == "Desperado Guns" {
-						menu.Assets.Add(header[0], scid)
+						menu.Assets.Add(add, icon[0])
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					} else if collection[0] == "High Strangeness" {
-						menu.Assets.Add(header[0], scid)
+						menu.Assets.Add(add, icon[0])
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					} else if collection[0] == "Death By Cupcake" {
-						menu.Assets.Add(header[0], scid)
+						menu.Assets.Add(add, icon[0])
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					}
 				}

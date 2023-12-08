@@ -9,7 +9,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"github.com/dReam-dApps/dReams/dwidget"
-	"github.com/dReam-dApps/dReams/menu"
 	"github.com/dReam-dApps/dReams/rpc"
 )
 
@@ -71,8 +70,8 @@ func (grave grave) findDiscount() (discount uint64) {
 
 // Gets graveyard and leader board data
 func GetGraveyard() {
-	if menu.Gnomes.IsReady() {
-		if info := menu.Gnomes.GetAllSCIDVariableDetails(DUELSCID); info != nil {
+	if gnomon.IsReady() {
+		if info := gnomon.GetAllSCIDVariableDetails(DUELSCID); info != nil {
 			Graveyard.Lock()
 			defer Graveyard.Unlock()
 			for _, h := range info {
@@ -84,14 +83,14 @@ func GetGraveyard() {
 						u := rpc.StringToUint64(split[1])
 						if Graveyard.Index[u].Char == "" {
 
-							if _, time := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "time_"+split[1]+"_"+split[2]); time != nil {
+							if _, time := gnomon.GetSCIDValuesByKey(DUELSCID, "time_"+split[1]+"_"+split[2]); time != nil {
 								img, err := downloadBytes(split[2])
 								if err != nil {
 									logger.Errorln("[GetGraveyard]", h.Key, err)
 									continue
 								}
 
-								token, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "tkn_"+split[1])
+								token, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "tkn_"+split[1])
 								if token == nil {
 									token = append(token, "")
 								}
@@ -124,7 +123,7 @@ func GetGraveyard() {
 								}
 							}
 
-							_, losses := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "l_"+split[1])
+							_, losses := gnomon.GetSCIDValuesByKey(DUELSCID, "l_"+split[1])
 							if losses == nil {
 								losses = append(losses, 0)
 							}
@@ -156,7 +155,7 @@ func GetGraveyard() {
 			// Remove revived from Graveyard
 			for u, gr := range Graveyard.Index {
 				str := strconv.Itoa(int(u))
-				if _, re := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "ret_"+str+"_"+gr.Char); re == nil {
+				if _, re := gnomon.GetSCIDValuesByKey(DUELSCID, "ret_"+str+"_"+gr.Char); re == nil {
 					Graveyard.RemoveIndex(u)
 					Graveyard.Index[u] = grave{}
 				}

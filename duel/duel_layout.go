@@ -16,6 +16,7 @@ import (
 	dreams "github.com/dReam-dApps/dReams"
 	"github.com/dReam-dApps/dReams/bundle"
 	"github.com/dReam-dApps/dReams/dwidget"
+	"github.com/dReam-dApps/dReams/gnomes"
 	"github.com/dReam-dApps/dReams/menu"
 	"github.com/dReam-dApps/dReams/rpc"
 )
@@ -218,10 +219,10 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				dialog.NewInformation("Claim All", "You are not connected to daemon or wallet", d.Window).Show()
 			}
 		case "Clear Cache":
-			if menu.Gnomes.DBType == "boltdb" {
+			if gnomon.DBStorageType() == "boltdb" {
 				dialog.NewConfirm("Clear Image Cache", "Would you like to clear your stored image cache?", func(b bool) {
 					if b {
-						deleteIndex()
+						gnomes.DeleteStorage("DUELBUCKET", "DUELS")
 					}
 				}, d.Window).Show()
 			} else {
@@ -1331,6 +1332,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 	// Main duel process
 	go func() {
+		Duels.Index = make(map[uint64]entry)
 		Graveyard.Index = make(map[uint64]grave)
 		Inventory.characters = make(map[string]asset)
 		Inventory.items = make(map[string]asset)
@@ -1363,10 +1365,10 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					continue
 				}
 
-				if !synced && menu.GnomonScan(d.IsConfiguring()) {
+				if !synced && gnomes.GnomonScan(d.IsConfiguring()) {
 					sync_label.SetText("Creating duels index, this may take a few minutes to complete")
 					logger.Println("[Duels] Syncing")
-					Duels = getIndex()
+					gnomes.GetStorage("DUELBUCKET", "DUELS", &Duels)
 					synced = true
 				}
 
@@ -1406,8 +1408,8 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					if !loaded {
 						sync_prog.SetValue(0)
 						sync_label.SetText("Getting graves, this may take a few minutes to complete")
-						if menu.Gnomes.IsReady() {
-							info := menu.Gnomes.GetAllSCIDVariableDetails(DUELSCID)
+						if gnomon.IsReady() {
+							info := gnomon.GetAllSCIDVariableDetails(DUELSCID)
 							sync_prog.Max = float64(len(info)) + 1
 						} else {
 							sync_prog.Max = float64(400)
@@ -1417,8 +1419,8 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 					GetGraveyard()
 					if offset%10 == 0 {
-						if !menu.Gnomes.IsClosing() {
-							storeIndex()
+						if !gnomon.IsClosing() {
+							gnomes.StoreBolt("DUELBUCKET", "DUELS", &Duels)
 						}
 					}
 

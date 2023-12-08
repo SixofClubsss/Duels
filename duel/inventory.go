@@ -104,7 +104,7 @@ func removeRank(str string) (newStr string) {
 
 // Check if SCID has a valid duel rank
 func validateAssetRank(scid string) uint64 {
-	if desc, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "descrHdr"); desc != nil {
+	if desc, _ := gnomon.GetSCIDValuesByKey(scid, "descrHdr"); desc != nil {
 		var rank assetRank
 		split := strings.Split(desc[0], ";;")
 
@@ -125,7 +125,7 @@ func validateAssetRank(scid string) uint64 {
 
 // Add duel character asset to inventory and download icon image
 func (inv *inventory) AddCharToInventory(name string) {
-	scid := menu.Assets.Asset_map[name]
+	scid := menu.Assets.SCIDs[name]
 	img, err := downloadBytes(scid)
 	inv.Lock()
 	defer inv.Unlock()
@@ -145,7 +145,7 @@ func (inv *inventory) AddCharToInventory(name string) {
 
 // Add duel item asset to inventory and download icon image
 func (inv *inventory) AddItemToInventory(name string) {
-	scid := menu.Assets.Asset_map[name]
+	scid := menu.Assets.SCIDs[name]
 	img, err := downloadBytes(scid)
 	inv.Lock()
 	defer inv.Unlock()
@@ -207,7 +207,7 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 		return
 	}
 
-	if desc, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "descrHdr"); desc != nil {
+	if desc, _ := gnomon.GetSCIDValuesByKey(scid, "descrHdr"); desc != nil {
 		var rank assetRank
 		splitDesc := strings.Split(desc[0], ";;")
 		if len(splitDesc) > 1 {
