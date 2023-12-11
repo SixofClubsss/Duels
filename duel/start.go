@@ -50,7 +50,7 @@ func StartApp() {
 	w.SetMaster()
 	done := make(chan struct{})
 
-	menu.Theme.Img = *canvas.NewImageFromResource(nil)
+	menu.Theme.Img = *canvas.NewImageFromResource(menu.DefaultThemeResource())
 	d := dreams.AppObject{
 		App:        a,
 		Window:     w,
@@ -62,6 +62,7 @@ func StartApp() {
 		save := dreams.SaveData{
 			Skin:   config.Skin,
 			DBtype: gnomon.DBStorageType(),
+			Theme:  menu.Theme.Name,
 		}
 
 		if rpc.Daemon.Rpc == "" {
@@ -88,10 +89,7 @@ func StartApp() {
 
 	gnomon.SetDBStorageType("boltdb")
 	gnomon.SetFastsync(true)
-	rpc.InitBalances()
 	d.SetChannels(1)
-
-	menu.Assets.SCIDs = make(map[string]string)
 
 	// Create dwidget rpc connect box
 	connect_box := dwidget.NewHorizontalEntries(app_tag, 1)
@@ -181,7 +179,7 @@ func StartApp() {
 
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Duels", LayoutAllItems(menu.Assets.SCIDs, &d)),
-		container.NewTabItem("Assets", menu.PlaceAssets(app_tag, profile(), nil, bundle.ResourceMarketIconPng, &d)),
+		container.NewTabItem("Assets", menu.PlaceAssets(app_tag, profile(&d), nil, bundle.ResourceMarketIconPng, &d)),
 		container.NewTabItem("Log", rpc.SessionLog(app_tag, version)))
 
 	tabs.SetTabLocation(container.TabLocationBottom)
@@ -255,13 +253,13 @@ func checkNFAOwner(scid string) {
 }
 
 // User profile layout with dreams.AssetSelects
-func profile() fyne.CanvasObject {
+func profile(d *dreams.AppObject) fyne.CanvasObject {
 	line := canvas.NewLine(bundle.TextColor)
 	form := []*widget.FormItem{}
 	form = append(form, widget.NewFormItem("Name", menu.NameEntry()))
 	form = append(form, widget.NewFormItem("", layout.NewSpacer()))
 	form = append(form, widget.NewFormItem("", container.NewVBox(line)))
-	form = append(form, widget.NewFormItem("Theme", menu.ThemeSelect()))
+	form = append(form, widget.NewFormItem("Theme", menu.ThemeSelect(d)))
 	form = append(form, widget.NewFormItem("", layout.NewSpacer()))
 	form = append(form, widget.NewFormItem("", container.NewVBox(line)))
 

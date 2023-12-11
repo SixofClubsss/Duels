@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/dReam-dApps/dReams/gnomes"
-	"github.com/dReam-dApps/dReams/menu"
 	"github.com/dReam-dApps/dReams/rpc"
 	"github.com/docopt/docopt-go"
 	"github.com/sirupsen/logrus"
@@ -187,9 +186,6 @@ func RunRefService() {
 
 	// Set up Gnomon search filters for Duel
 	filter := []string{rpc.GetSCCode(DUELSCID), gnomes.NFA_SEARCH_FILTER}
-
-	// Set up SCID rating map
-	menu.Control.Ratings = make(map[string]uint64)
 
 	// Start Gnomon with search filters
 	go gnomes.StartGnomon("RefService", gnomon.DBStorageType(), filter, 0, 0, nil)
