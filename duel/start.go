@@ -125,7 +125,7 @@ func StartApp() {
 					connect_box.RefreshBalance()
 					menu.DisableIndexControls(false)
 					if !synced {
-						checkNFAs(app_tag, synced, nil)
+						checkNFAs(app_tag, synced, false, nil)
 						synced = true
 					}
 				} else {
@@ -193,21 +193,28 @@ func StartApp() {
 	logger.Printf("[%s] Closed\n", app_tag)
 }
 
-// Checks for valid duel NFAs, used only in stand alone version
-func checkNFAs(tag string, gc bool, scids map[string]string) {
+// Checks for valid duel NFAs
+func checkNFAs(tag string, gc, progress bool, scids map[string]string) {
 	if gnomon.IsReady() && !gc {
 		if scids == nil {
 			scids = gnomon.GetAllOwnersAndSCIDs()
 		}
 
 		menu.Assets.Asset = []menu.Asset{}
+		Inventory.ClearAll()
 		logger.Printf("[%s] Checking NFA Assets\n", tag)
+		if progress {
+			sync_prog.Max = float64(len(scids))
+			sync_prog.SetValue(0)
+		}
 
 		for sc := range scids {
 			if !rpc.Wallet.IsConnected() || !gnomon.IsRunning() {
 				break
 			}
-
+			if progress {
+				updateSyncProgress(sync_prog)
+			}
 			checkNFAOwner(sc)
 		}
 

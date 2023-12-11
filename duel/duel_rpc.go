@@ -13,7 +13,7 @@ import (
 const DUELSCID = "d455bd7567453a1c11177b7a3bc58ed36aa8ead4503587bb8d86c7f308a91bdf"
 
 // Start a duel
-func StartDuel(amt, items, rule, dm, op uint64, char, item1, item2, token string) {
+func StartDuel(amt, items, rule, dm, op uint64, char, item1, item2, token string) (tx string) {
 	rpcClientW, ctx, cancel := rpc.SetWalletClient(rpc.Wallet.Rpc, rpc.Wallet.UserPass)
 	defer cancel()
 
@@ -88,10 +88,12 @@ func StartDuel(amt, items, rule, dm, op uint64, char, item1, item2, token string
 	}
 
 	rpc.PrintLog("[Duels] Start TX: %s", txid)
+
+	return txid.TXID
 }
 
 // Accept joinable duel
-func (duel entry) AcceptDuel(items, op uint64, char, item1, item2 string) {
+func (duel entry) AcceptDuel(items, op uint64, char, item1, item2 string) (tx string) {
 	rpcClientW, ctx, cancel := rpc.SetWalletClient(rpc.Wallet.Rpc, rpc.Wallet.UserPass)
 	defer cancel()
 
@@ -161,6 +163,8 @@ func (duel entry) AcceptDuel(items, op uint64, char, item1, item2 string) {
 	}
 
 	rpc.PrintLog("[Duels] Accept TX: %s", txid)
+
+	return txid.TXID
 }
 
 // Ref a duel, need to be owner or a ref on SC to call
@@ -288,7 +292,7 @@ func (grave grave) Revive() (tx string) {
 }
 
 // Refund a duel, used by owners, refs and players
-func Refund(n string) {
+func Refund(n string) (tx string) {
 	rpcClientW, ctx, cancel := rpc.SetWalletClient(rpc.Wallet.Rpc, rpc.Wallet.UserPass)
 	defer cancel()
 
@@ -314,4 +318,6 @@ func Refund(n string) {
 	}
 
 	rpc.PrintLog("[Duels] Refund TX: %s", txid)
+
+	return txid.TXID
 }

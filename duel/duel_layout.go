@@ -41,7 +41,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	selected_duel := uint64(0)
 	selected_grave := uint64(0)
 	var resetToTabs, updateDMLabel func()
-	var starting_duel, accepting_duel bool
+	var starting_duel, accepting_duel, loaded bool
 	var max *fyne.Container
 	var tabs *container.AppTabs
 
@@ -50,15 +50,19 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	sil.SetMinSize(fyne.NewSize(150, 320))
 
 	total_rank_label := dwidget.NewCanvasText("", 15, fyne.TextAlignCenter)
-	start_duel := widget.NewButton("Start a Duel", nil)
+
+	start_duel := widget.NewButton("Start Duel", nil)
+	start_duel.Importance = widget.HighImportance
 	start_duel.Hide()
 
 	character := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	character.SetMinSize(fyne.NewSize(100, 100))
-	char_opts := []string{}
-	Inventory.Character.Select = widget.NewSelect(char_opts, nil)
+
+	Inventory.Character.Select = widget.NewSelect([]string{}, nil)
 	Inventory.Character.Select.PlaceHolder = "Character:"
-	char_clear := widget.NewButtonWithIcon("", fyne.Theme.Icon(fyne.CurrentApp().Settings().Theme(), "viewRefresh"), nil)
+
+	char_clear := widget.NewButtonWithIcon("", dreams.FyneIcon("viewRefresh"), nil)
+	char_clear.Importance = widget.LowImportance
 	character_cont := container.NewBorder(
 		container.NewBorder(nil, nil, char_clear, nil, Inventory.Character.Select),
 		nil,
@@ -110,11 +114,12 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 	item1 := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	item1.SetMinSize(fyne.NewSize(100, 100))
-	item1_opts := []string{}
-	Inventory.Item1.Select = widget.NewSelect(item1_opts, nil)
-	Inventory.Item1.Select.PlaceHolder = "Item 1:"
-	item1_clear := widget.NewButtonWithIcon("", fyne.Theme.Icon(fyne.CurrentApp().Settings().Theme(), "viewRefresh"), nil)
 
+	Inventory.Item1.Select = widget.NewSelect([]string{}, nil)
+	Inventory.Item1.Select.PlaceHolder = "Item 1:"
+
+	item1_clear := widget.NewButtonWithIcon("", dreams.FyneIcon("viewRefresh"), nil)
+	item1_clear.Importance = widget.LowImportance
 	item1_cont := container.NewVBox(container.NewBorder(nil, nil, item1_clear, nil, container.NewStack(select_spacer, Inventory.Item1.Select)), container.NewCenter(item1))
 	item1_clear.OnTapped = func() {
 		Inventory.Item1.Select.ClearSelected()
@@ -148,10 +153,12 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 	item2 := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	item2.SetMinSize(fyne.NewSize(100, 100))
-	item2_opts := []string{}
-	Inventory.Item2.Select = widget.NewSelect(item2_opts, nil)
+
+	Inventory.Item2.Select = widget.NewSelect([]string{}, nil)
 	Inventory.Item2.Select.PlaceHolder = "Item 2:"
-	item2_clear := widget.NewButtonWithIcon("", fyne.Theme.Icon(fyne.CurrentApp().Settings().Theme(), "viewRefresh"), nil)
+
+	item2_clear := widget.NewButtonWithIcon("", dreams.FyneIcon("viewRefresh"), nil)
+	item2_clear.Importance = widget.LowImportance
 	item2_cont := container.NewVBox(container.NewBorder(nil, nil, item2_clear, nil, container.NewStack(select_spacer, Inventory.Item2.Select)), container.NewCenter(item2))
 	item2_clear.OnTapped = func() {
 		Inventory.Item2.Select.ClearSelected()
@@ -184,19 +191,44 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	equip_box := container.NewCenter(equip_alpha,
 		container.NewStack(container.NewBorder(container.NewStack(character_cont), container.NewBorder(total_rank_label, nil, nil, nil, container.NewStack()), container.NewStack(item1_cont), container.NewStack(item2_cont), sil)))
 
+	sync_label := dwidget.NewCenterLabel("Connect to Daemon and Wallet to sync")
+	sync_prog = widget.NewProgressBar()
+	sync_prog.Min = 0
+	sync_prog.Max = 50
+	sync_spacer := canvas.NewRectangle(color.RGBA{0, 0, 0, 0})
+	sync_spacer.SetMinSize(fyne.NewSize(485, 0))
+	sync_img := canvas.NewImageFromResource(ResourceDuelCirclePng)
+	sync_img.SetMinSize(fyne.NewSize(200, 200))
+	sync_cont := container.NewStack(container.NewCenter(container.NewBorder(sync_spacer, sync_label, nil, nil, container.NewCenter(sync_img))), sync_prog)
+
 	options_select := widget.NewSelect([]string{"Recheck Assets", "Claim All", "Clear Cache"}, nil)
 	options_select.PlaceHolder = "Options:"
+
+	equip_cont := container.NewBorder(
+		dwidget.NewCanvasText("Your Inventory", 18, fyne.TextAlignCenter),
+		container.NewAdaptiveGrid(2, container.NewStack(start_duel), options_select),
+		nil,
+		nil,
+		equip_box)
+
 	options_select.OnChanged = func(s string) {
 		switch s {
 		case "Recheck Assets":
 			if rpc.IsReady() {
 				dialog.NewConfirm("Recheck Assets", "Would you like to recheck wallet for Duel assets?", func(b bool) {
 					if b {
+						sync_label.SetText("Scanning Assets...")
+						max.Objects[0].(*container.Split).Leading.(*fyne.Container).Objects[0] = container.NewStack(sync_cont)
+						max.Objects[0].(*container.Split).Leading.Refresh()
 						Inventory.ClearAll()
 						character_cont.Objects[0].(*fyne.Container).Objects[0] = character
 						item1_cont.Objects[1].(*fyne.Container).Objects[0] = item1
 						item2_cont.Objects[1].(*fyne.Container).Objects[0] = item2
-						checkNFAs("Duels", false, nil)
+						checkNFAs("Duels", false, true, nil)
+						sync_prog.Max = 1
+						sync_prog.SetValue(0)
+						max.Objects[0].(*container.Split).Leading.(*fyne.Container).Objects[0] = container.NewCenter(equip_cont)
+						max.Objects[0].(*container.Split).Leading.Refresh()
 					}
 				}, d.Window).Show()
 			} else {
@@ -234,13 +266,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		options_select.Selected = ""
 	}
 
-	equip_cont := container.NewBorder(
-		dwidget.NewCanvasText("Your Inventory", 18, fyne.TextAlignCenter),
-		container.NewAdaptiveGrid(2, container.NewStack(start_duel), options_select),
-		nil,
-		nil,
-		equip_box)
-
 	// Opponent box
 	opponent_sil := canvas.NewImageFromResource(resourceCowboySilPng)
 	opponent_sil.SetMinSize(fyne.NewSize(150, 320))
@@ -268,6 +293,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		container.NewBorder(opponent_character_cont, layout.NewSpacer(), opponent_item1_cont, opponent_item2_cont, opponent_sil))
 
 	accept_duel := widget.NewButton("Accept Duel", nil)
+	accept_duel.Importance = widget.HighImportance
 
 	resetToTabs = func() {
 		selected_join = 0
@@ -303,7 +329,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		resetToTabs()
 	})
 
-	opponent_equip_cont := container.NewBorder(nil, container.NewAdaptiveGrid(2, accept_duel, back_button), nil, nil, opponent_equip_box)
+	opponent_equip_cont := container.NewBorder(nil, container.NewCenter(container.NewAdaptiveGrid(2, accept_duel, back_button)), nil, nil, opponent_equip_box)
 
 	// List of current joinable duels
 	Joins.List = widget.NewList(
@@ -371,6 +397,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 	// Clicking on a join will bring up join confirmation
 	Joins.List.OnSelected = func(id widget.ListItemID) {
+		if !loaded {
+			return
+		}
 		go func() {
 			if search.joins.searching {
 				if search.joins.results == nil {
@@ -390,7 +419,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				dialog.NewConfirm("Cancel Duel", "Would you like to cancel this Duel?", func(b bool) {
 					if b {
 						if n := strconv.FormatUint(selected_join, 10); n != "" {
-							Refund(n)
+							if tx := Refund(n); tx != "" {
+								go menu.ShowTxDialog("Cancel Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
+							}
 							resetToTabs()
 						}
 					}
@@ -615,7 +646,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				opponent_label.SetText(label_text)
 			}
 
-			opponent_equip_cont = container.NewBorder(dwidget.NewCanvasText(fmt.Sprintf("Accept %s for %s %s", header, rpc.FromAtomic(amt, 5), asset_name), 18, fyne.TextAlignCenter), container.NewVBox(opponent_label, container.NewAdaptiveGrid(2, accept_duel, back_button)), nil, nil, opponent_equip_box)
+			opponent_equip_cont = container.NewBorder(dwidget.NewCanvasText(fmt.Sprintf("Accept %s for %s %s", header, rpc.FromAtomic(amt, 5), asset_name), 18, fyne.TextAlignCenter), container.NewVBox(opponent_label, container.NewCenter(container.NewAdaptiveGrid(2, accept_duel, back_button))), nil, nil, opponent_equip_box)
 
 			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = container.NewStack(bundle.NewAlpha180(), opponent_equip_cont)
 			max.Objects[0].(*container.Split).Trailing.Refresh()
@@ -739,28 +770,35 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		defer Duels.RUnlock()
 		if checkOwnerAndRefs() {
 			var info dialog.Dialog
-			info = dialog.NewCustom("Owner Options", "Done", container.NewHBox(widget.NewButton("Ref Duel", func() {
+			ref_button := widget.NewButton("Ref Duel", func() {
 				dialog.NewConfirm("Ref Duel", fmt.Sprintf("Would you like to Ref this Duel?\n\n%s", Duels.Index[selected_duel].dryRefDuel()), func(b bool) {
 					if b {
 						info.Hide()
-						Duels.Index[selected_duel].refDuel()
-
+						if tx := Duels.Index[selected_duel].refDuel(); tx != "" {
+							go menu.ShowTxDialog("Ref Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
+						}
 						resetToTabs()
 					}
 				}, d.Window).Show()
-			}),
-				widget.NewButton("Refund", func() {
-					dialog.NewConfirm("Refund Duel", "Would you like to refund this Duel?", func(b bool) {
-						if b {
-							if n := strconv.FormatUint(selected_duel, 10); n != "" {
-								info.Hide()
-								Refund(n)
-								resetToTabs()
-							}
-						}
-					}, d.Window).Show()
+			})
+			ref_button.Importance = widget.HighImportance
 
-				})), d.Window)
+			refund_button := widget.NewButton("Refund", func() {
+				dialog.NewConfirm("Refund Duel", "Would you like to refund this Duel?", func(b bool) {
+					if b {
+						if n := strconv.FormatUint(selected_duel, 10); n != "" {
+							info.Hide()
+							if tx := Refund(n); tx != "" {
+								go menu.ShowTxDialog("Refund Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
+							}
+							resetToTabs()
+						}
+					}
+				}, d.Window).Show()
+			})
+			refund_button.Importance = widget.HighImportance
+
+			info = dialog.NewCustom("Owner Options", "Done", container.NewHBox(ref_button, refund_button), d.Window)
 			info.SetOnClosed(func() {
 				Ready.List.UnselectAll()
 			})
@@ -772,7 +810,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				dialog.NewConfirm("Cancel Duel", "Would you like to cancel this Duel?", func(b bool) {
 					if b {
 						if n := strconv.FormatUint(selected_join, 10); n != "" {
-							Refund(n)
+							if tx := Refund(n); tx != "" {
+								go menu.ShowTxDialog("Cancel Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
+							}
 							resetToTabs()
 						}
 					}
@@ -852,7 +892,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		scid := Graveyard.Index[selected_grave].Char
 		if tx := Graveyard.Index[selected_grave].Revive(); tx != "" {
 			go func() {
-				menu.ShowTxDialog("Revive", fmt.Sprintf("TX: %s\n\nAuto claim tx will be sent once revive is confirmed", tx), tx, 5*time.Second, d.Window)
+				go menu.ShowTxDialog("Revive", fmt.Sprintf("TX: %s\n\nAuto claim tx will be sent once revive is confirmed", tx), tx, 5*time.Second, d.Window)
 				if rpc.ConfirmTx(tx, app_tag, 60) {
 					if claim := rpc.ClaimNFA(scid); claim != "" {
 						if rpc.ConfirmTx(claim, app_tag, 60) {
@@ -865,6 +905,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 		resetToTabs()
 	})
+	accept_grave.Importance = widget.HighImportance
 
 	// Clicking on a grave will bring up revive confirmation
 	Graveyard.List.OnSelected = func(id widget.ListItemID) {
@@ -905,7 +946,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				dwidget.NewCanvasText(revive_fee, 18, fyne.TextAlignCenter)),
 			container.NewVBox(
 				dwidget.NewCenterLabel(fmt.Sprintf("Revive\n\n%s\n\nfrom grave yard for %s", Graveyard.Index[selected_grave].Char, revive_fee)),
-				container.NewAdaptiveGrid(2, accept_grave, back_button)),
+				container.NewCenter(container.NewAdaptiveGrid(2, accept_grave, back_button))),
 			nil,
 			nil,
 			container.NewCenter(icon))
@@ -1076,16 +1117,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 	top_label := container.NewHBox(D.LeftLabel, layout.NewSpacer(), D.RightLabel)
 
-	sync_label := dwidget.NewCenterLabel("Connect to Daemon and Wallet to sync")
-	sync_prog = widget.NewProgressBar()
-	sync_prog.Min = 0
-	sync_prog.Max = 50
-	sync_spacer := canvas.NewRectangle(color.RGBA{0, 0, 0, 0})
-	sync_spacer.SetMinSize(fyne.NewSize(450, 0))
-	sync_img := canvas.NewImageFromResource(ResourceDuelCirclePng)
-	sync_img.SetMinSize(fyne.NewSize(200, 200))
-	sync_cont := container.NewStack(container.NewCenter(container.NewBorder(sync_spacer, sync_label, nil, nil, container.NewCenter(sync_img))), sync_prog)
-
 	max = container.NewStack(container.NewHSplit(container.NewStack(sync_cont), container.NewStack(bundle.NewAlpha120(), tabs)))
 	max.Objects[0].(*container.Split).SetOffset(0)
 
@@ -1194,16 +1225,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				return
 			}
 
-			if opt_select.SelectedIndex() < 0 {
-				info := dialog.NewInformation("Start Duel", "Choose aim option", d.Window)
-				info.SetOnClosed(func() {
-					opt_select.FocusLost()
-				})
-				info.Show()
-				opt_select.FocusGained()
-				return
-			}
-
 			f, err := strconv.ParseFloat(duel_amt.Text, 64)
 			if err != nil || f == 0 {
 				info := dialog.NewInformation("Start Duel", "Amount error", d.Window)
@@ -1214,6 +1235,17 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				duel_amt.FocusGained()
 				return
 			}
+
+			if opt_select.SelectedIndex() < 0 {
+				info := dialog.NewInformation("Start Duel", "Choose aim option", d.Window)
+				info.SetOnClosed(func() {
+					opt_select.FocusLost()
+				})
+				info.Show()
+				opt_select.FocusGained()
+				return
+			}
+
 			start_duel.Hide()
 			items := uint64(0)
 			var item1_str, item2_str string
@@ -1249,7 +1281,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				return
 			}
 
-			StartDuel(rpc.ToAtomic(f, 5), items, rule, dm, aim, char_str, item1_str, item2_str, rpc.SCIDs[duel_curr.Selected])
+			if tx := StartDuel(rpc.ToAtomic(f, 5), items, rule, dm, aim, char_str, item1_str, item2_str, rpc.SCIDs[duel_curr.Selected]); tx != "" {
+				go menu.ShowTxDialog("Start Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
+			}
 
 			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
 			max.Objects[0].(*container.Split).Trailing.Refresh()
@@ -1279,7 +1313,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				items++
 			}
 
-			Duels.Index[selected_join].AcceptDuel(items, uint64(opt_select.SelectedIndex()), char_str, item1_str, item2_str)
+			if tx := Duels.Index[selected_join].AcceptDuel(items, uint64(opt_select.SelectedIndex()), char_str, item1_str, item2_str); tx != "" {
+				go menu.ShowTxDialog("Accept Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
+			}
 
 			accepting_duel = false
 			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
@@ -1288,6 +1324,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		}
 		resetToTabs()
 	})
+	confirm_button.Importance = widget.HighImportance
 
 	cancel_button := widget.NewButton("Cancel", func() {
 		start_duel_char.SetText("")
@@ -1296,7 +1333,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		resetToTabs()
 	})
 
-	action_cont := container.NewAdaptiveGrid(2, confirm_button, cancel_button)
+	action_cont := container.NewCenter(container.NewAdaptiveGrid(2, confirm_button, cancel_button))
 
 	start_label_spacer := canvas.NewRectangle(color.RGBA{0, 0, 0, 0})
 	start_label_spacer.SetMinSize(fyne.NewSize(0, 120))
@@ -1338,7 +1375,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		Inventory.items = make(map[string]asset)
 		time.Sleep(3 * time.Second)
 		var offset int
-		var synced, loaded bool
+		var synced bool
 		for {
 			select {
 			case <-d.Receive():
@@ -1500,7 +1537,7 @@ func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d
 		}
 	})
 
-	clear_button := widget.NewButtonWithIcon("", fyne.Theme.Icon(fyne.CurrentApp().Settings().Theme(), "searchReplace"), func() {
+	clear_button := widget.NewButtonWithIcon("", dreams.FyneIcon("searchReplace"), func() {
 		search_entry.SetText("")
 		s.results = nil
 		s.searching = false
@@ -1509,6 +1546,7 @@ func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d
 			return len(l.All)
 		}
 	})
+	clear_button.Importance = widget.LowImportance
 
 	search_button := widget.NewButton("Search", func() {
 		s.results = nil
@@ -1630,7 +1668,7 @@ func (s *searches) searchGraves(d *dreams.AppObject) (max *fyne.Container) {
 		}
 	})
 
-	search_finals_clear := widget.NewButtonWithIcon("", fyne.Theme.Icon(fyne.CurrentApp().Settings().Theme(), "searchReplace"), func() {
+	search_finals_clear := widget.NewButtonWithIcon("", dreams.FyneIcon("searchReplace"), func() {
 		s.results = nil
 		s.searching = false
 		search_select.Enable()
@@ -1638,6 +1676,7 @@ func (s *searches) searchGraves(d *dreams.AppObject) (max *fyne.Container) {
 			return len(Graveyard.All)
 		}
 	})
+	search_finals_clear.Importance = widget.LowImportance
 
 	search_finals_button := widget.NewButton("Search", func() {
 		s.results = nil
