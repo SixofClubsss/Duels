@@ -53,7 +53,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	start_duel := widget.NewButton("Start a Duel", nil)
 	start_duel.Hide()
 
-	character := canvas.NewImageFromResource(bundle.ResourceAvatarFramePng)
+	character := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	character.SetMinSize(fyne.NewSize(100, 100))
 	char_opts := []string{}
 	Inventory.Character.Select = widget.NewSelect(char_opts, nil)
@@ -108,7 +108,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	select_spacer := canvas.NewRectangle(color.RGBA{0, 0, 0, 0})
 	select_spacer.SetMinSize(fyne.NewSize(120, 0))
 
-	item1 := canvas.NewImageFromResource(bundle.ResourceAvatarFramePng)
+	item1 := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	item1.SetMinSize(fyne.NewSize(100, 100))
 	item1_opts := []string{}
 	Inventory.Item1.Select = widget.NewSelect(item1_opts, nil)
@@ -146,7 +146,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	}
 	Inventory.Item1.Select.Disable()
 
-	item2 := canvas.NewImageFromResource(bundle.ResourceAvatarFramePng)
+	item2 := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	item2.SetMinSize(fyne.NewSize(100, 100))
 	item2_opts := []string{}
 	Inventory.Item2.Select = widget.NewSelect(item2_opts, nil)
@@ -245,16 +245,16 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	opponent_sil := canvas.NewImageFromResource(resourceCowboySilPng)
 	opponent_sil.SetMinSize(fyne.NewSize(150, 320))
 
-	opponent_character := canvas.NewImageFromResource(bundle.ResourceAvatarFramePng)
+	opponent_character := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	opponent_character.SetMinSize(fyne.NewSize(100, 100))
 	opponent_character_cont := container.NewCenter(opponent_character)
 
-	opponent_item1 := canvas.NewImageFromResource(bundle.ResourceAvatarFramePng)
+	opponent_item1 := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	opponent_item1.SetMinSize(fyne.NewSize(100, 100))
 
 	opponent_item1_cont := container.NewVBox(container.NewCenter(opponent_item1))
 
-	opponent_item2 := canvas.NewImageFromResource(bundle.ResourceAvatarFramePng)
+	opponent_item2 := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	opponent_item2.SetMinSize(fyne.NewSize(100, 100))
 	opponent_item2_cont := container.NewVBox(container.NewCenter(opponent_item2))
 

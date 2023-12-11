@@ -41,7 +41,7 @@ var Inventory inventory
 // Creates a 100x100 icon with frame
 //   - Pass icon image as []byte
 func iconLarge(icon []byte, name string) fyne.CanvasObject {
-	frame := canvas.NewImageFromResource(bundle.ResourceAvatarFramePng)
+	frame := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	frame.SetMinSize(fyne.NewSize(100, 100))
 
 	if icon == nil {
@@ -63,7 +63,7 @@ func iconLarge(icon []byte, name string) fyne.CanvasObject {
 //   - Pass icon image as []byte
 //   - Pass died as true to X out icon
 func iconSmall(icon []byte, name string, died bool) fyne.CanvasObject {
-	frame := canvas.NewImageFromResource(bundle.ResourceAvatarFramePng)
+	frame := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	frame.SetMinSize(fyne.NewSize(60, 60))
 
 	if icon == nil {
