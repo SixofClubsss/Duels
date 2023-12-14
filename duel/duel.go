@@ -89,6 +89,13 @@ var Joins dwidget.Lists
 var Ready dwidget.Lists
 var Finals dwidget.Lists
 
+func init() {
+	Duels.Index = make(map[uint64]entry)
+	Graveyard.Index = make(map[uint64]grave)
+	Inventory.characters = make(map[string]asset)
+	Inventory.items = make(map[string]asset)
+}
+
 // Menu intro for dReams app
 func DreamsMenuIntro() (entries map[string][]string) {
 	entries = map[string][]string{
@@ -1085,6 +1092,8 @@ func Disconnected() {
 	Leaders.board = []records{}
 	Duels.Index = make(map[uint64]entry)
 	Graveyard.Index = make(map[uint64]grave)
+	Inventory.characters = make(map[string]asset)
+	Inventory.items = make(map[string]asset)
 	Inventory.ClearAll()
 }
 

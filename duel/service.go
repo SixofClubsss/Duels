@@ -93,8 +93,9 @@ func RunRefService() {
 	n := runtime.NumCPU()
 	runtime.GOMAXPROCS(n)
 
-	arguments, err := docopt.ParseArgs(command_line, nil, Version().String())
+	gnomes.InitLogrusLog(logrus.InfoLevel)
 
+	arguments, err := docopt.ParseArgs(command_line, nil, Version().String())
 	if err != nil {
 		logger.Fatalf("Error while parsing arguments: %s\n", err)
 	}
@@ -146,8 +147,6 @@ func RunRefService() {
 			rpc.Wallet.UserPass = arguments["--login"].(string)
 		}
 	}
-
-	gnomes.InitLogrusLog(logrus.InfoLevel)
 
 	gnomon.SetFastsync(fastsync)
 	gnomon.SetParallel(parallel)

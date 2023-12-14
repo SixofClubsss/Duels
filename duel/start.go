@@ -47,6 +47,7 @@ func StartApp() {
 	w := a.NewWindow(app_tag)
 	w.SetIcon(ResourceDuelIconPng)
 	w.Resize(fyne.NewSize(1400, 800))
+	w.CenterOnScreen()
 	w.SetMaster()
 	done := make(chan struct{})
 
