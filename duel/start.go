@@ -89,7 +89,7 @@ func StartApp() {
 	}()
 
 	gnomon.SetDBStorageType("boltdb")
-	gnomon.SetFastsync(true)
+	gnomon.SetFastsync(true, true, 10000)
 	d.SetChannels(1)
 
 	// Create dwidget rpc connect box
@@ -120,7 +120,7 @@ func StartApp() {
 				rpc.EchoWallet(app_tag)
 				go rpc.GetDreamsBalances(rpc.SCIDs)
 				rpc.GetWalletHeight(app_tag)
-				gnomes.GnomonEndPoint()
+				gnomes.EndPoint()
 
 				if rpc.Wallet.IsConnected() && gnomon.IsReady() {
 					connect_box.RefreshBalance()

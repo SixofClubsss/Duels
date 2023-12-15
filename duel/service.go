@@ -148,7 +148,7 @@ func RunRefService() {
 		}
 	}
 
-	gnomon.SetFastsync(fastsync)
+	gnomon.SetFastsync(fastsync, true, 10000)
 	gnomon.SetParallel(parallel)
 	gnomon.SetDBStorageType("boltdb")
 

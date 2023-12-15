@@ -1114,6 +1114,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		})
 
 	tabs = container.NewAppTabs(
+		container.NewTabItemWithIcon("", ResourceDuelCirclePng, layout.NewSpacer()),
 		container.NewTabItem("Join", container.NewBorder(nil, search.joins.searchDuels([]string{"Address", "Amount", "Currency", "Death Match", "My Duels"}, false, &Joins, d), nil, nil, Joins.List)),
 		container.NewTabItem("Duels", container.NewBorder(nil, search.ready.searchDuels([]string{"Address", "Amount", "Currency", "Death Match", "My Duels"}, false, &Ready, d), nil, nil, Ready.List)),
 		container.NewTabItem("Graves", container.NewBorder(nil, search.graves.searchGraves(d), nil, nil, Graveyard.List)),
@@ -1433,7 +1434,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					continue
 				}
 
-				if !synced && gnomes.GnomonScan(d.IsConfiguring()) {
+				if !synced && gnomes.Scan(d.IsConfiguring()) {
 					sync_label.SetText("Creating duels index, this may take a few minutes to complete")
 					logger.Println("[Duels] Syncing")
 					gnomes.GetStorage("DUELBUCKET", "DUELS", &Duels)
@@ -1442,7 +1443,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 				if synced {
 					if !loaded {
-						if r, ok := rpc.FindStringKey(DUELSCID, "rds", rpc.Daemon.Rpc).(float64); ok {
+						if r, ok := rpc.GetStringKey(DUELSCID, "rds", rpc.Daemon.Rpc).(float64); ok {
 							sync_prog.Max = r + 1
 						} else {
 							sync_prog.Max = 50
