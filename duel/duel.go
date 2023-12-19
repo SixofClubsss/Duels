@@ -10,8 +10,6 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 
 	//xwidget "fyne.io/x/fyne/widget"
@@ -1114,74 +1112,6 @@ func checkOwnerAndRefs() bool {
 	}
 
 	return false
-}
-
-// Checks if wallet has any claimable duel NFAs, looking for dst from ref transfer
-func checkClaimable() (claimable []string) {
-	entries := rpc.GetWalletTransfers(2450000, uint64(rpc.Wallet.Height), uint64(0xA1B2C3D4E5F67890))
-	for _, e := range *entries {
-		split := strings.Split(string(e.Payload), "  ")
-		if len(split) > 2 && len(split[1]) == 64 {
-			if gnomes.CheckOwner(split[1]) || rpc.TokenBalance(split[1]) != 1 {
-				continue
-			}
-
-			var have bool
-			for _, sc := range claimable {
-				if sc == split[1] {
-					have = true
-					break
-				}
-			}
-
-			if !have {
-				claimable = append(claimable, split[1])
-			}
-		}
-	}
-
-	return
-}
-
-// Call ClaimOwnership on SC and confirm tx on all claimable
-func claimClaimable(claimable []string, d *dreams.AppObject) {
-	wait := true
-	progress_label := dwidget.NewCenterLabel("")
-	progress := widget.NewProgressBar()
-	progress_cont := container.NewBorder(nil, progress_label, nil, nil, progress)
-	progress.Min = float64(0)
-	progress.Max = float64(len(claimable))
-	wait_message := dialog.NewCustom("Claiming Duel Assets", "Stop", progress_cont, d.Window)
-	wait_message.Resize(fyne.NewSize(610, 150))
-	wait_message.SetOnClosed(func() {
-		wait = false
-	})
-	wait_message.Show()
-
-	for i, claim := range claimable {
-		if !wait {
-			break
-		}
-
-		retry := 0
-		for retry < 4 {
-			if !wait {
-				break
-			}
-
-			progress.SetValue(float64(i))
-			progress_label.SetText(fmt.Sprintf("Claiming: %s\n\nPlease wait for TX to be confirmed", claim))
-			tx := rpc.ClaimNFA(claim)
-			time.Sleep(time.Second)
-			retry += rpc.ConfirmTxRetry(tx, "checkClaimable", 60)
-
-			retry++
-
-		}
-	}
-	progress.SetValue(progress.Value + 1)
-	progress_label.SetText("Completed all claims")
-	wait_message.SetDismissText("Done")
 }
 
 // func playAnimation(address string, obj *fyne.Container, reset fyne.CanvasObject) {
