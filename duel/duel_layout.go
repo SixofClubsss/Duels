@@ -463,11 +463,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				dialog.NewConfirm("Cancel Duel", "Would you like to cancel this Duel?", func(b bool) {
 					if b {
 						if n := strconv.FormatUint(selected_join, 10); n != "" {
-							if tx := Refund(n); tx != "" {
-								go menu.ShowTxDialog("Cancel Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
-							} else {
-								go menu.ShowTxDialog("Cancel Duel", "TX error, check logs", tx, 3*time.Second, d.Window)
-							}
+							tx := Refund(n)
+							go menu.ShowTxDialog("Cancel Duel", "Duels", tx, 3*time.Second, d.Window)
+
 							resetToTabs()
 						}
 					}
@@ -810,11 +808,8 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				dialog.NewConfirm("Ref Duel", fmt.Sprintf("Would you like to Ref this Duel?\n\n%s", Duels.Index[selected_duel].dryRefDuel()), func(b bool) {
 					if b {
 						info.Hide()
-						if tx := Duels.Index[selected_duel].refDuel(); tx != "" {
-							go menu.ShowTxDialog("Ref Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
-						} else {
-							go menu.ShowTxDialog("Ref Duel", "TX error, check logs", tx, 3*time.Second, d.Window)
-						}
+						tx := Duels.Index[selected_duel].refDuel()
+						go menu.ShowTxDialog("Ref Duel", "Duels", tx, 3*time.Second, d.Window)
 						resetToTabs()
 					}
 				}, d.Window).Show()
@@ -826,11 +821,8 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					if b {
 						if n := strconv.FormatUint(selected_duel, 10); n != "" {
 							info.Hide()
-							if tx := Refund(n); tx != "" {
-								go menu.ShowTxDialog("Refund Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
-							} else {
-								go menu.ShowTxDialog("Refund Duel", "TX error, check logs", tx, 3*time.Second, d.Window)
-							}
+							tx := Refund(n)
+							go menu.ShowTxDialog("Refund Duel", "Duels", tx, 3*time.Second, d.Window)
 							resetToTabs()
 						}
 					}
@@ -850,11 +842,8 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				dialog.NewConfirm("Cancel Duel", "Would you like to cancel this Duel?", func(b bool) {
 					if b {
 						if n := strconv.FormatUint(selected_join, 10); n != "" {
-							if tx := Refund(n); tx != "" {
-								go menu.ShowTxDialog("Cancel Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
-							} else {
-								go menu.ShowTxDialog("Cancel Duel", "TX error, check logs", tx, 3*time.Second, d.Window)
-							}
+							tx := Refund(n)
+							go menu.ShowTxDialog("Cancel Duel", "Duels", tx, 3*time.Second, d.Window)
 							resetToTabs()
 						}
 					}
@@ -932,20 +921,17 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		Graveyard.RLock()
 		defer Graveyard.RUnlock()
 		scid := Graveyard.Index[selected_grave].Char
-		if tx := Graveyard.Index[selected_grave].Revive(); tx != "" {
-			go func() {
-				go menu.ShowTxDialog("Revive", fmt.Sprintf("TX: %s\n\nAuto claim tx will be sent once revive is confirmed", tx), tx, 5*time.Second, d.Window)
-				if rpc.ConfirmTx(tx, app_tag, 60) {
-					if claim := rpc.ClaimNFA(scid); claim != "" {
-						if rpc.ConfirmTx(claim, app_tag, 60) {
-							d.Notification(app_tag, fmt.Sprintf("Claimed: %s", scid))
-						}
+		tx := Graveyard.Index[selected_grave].Revive()
+		go func() {
+			go menu.ShowMessageDialog("Revive", fmt.Sprintf("TX: %s\n\nAuto claim tx will be sent once revive is confirmed", tx), 3*time.Second, d.Window)
+			if rpc.ConfirmTx(tx, app_tag, 60) {
+				if claim := rpc.ClaimNFA(scid); claim != "" {
+					if rpc.ConfirmTx(claim, app_tag, 60) {
+						d.Notification(app_tag, fmt.Sprintf("Claimed: %s", scid))
 					}
 				}
-			}()
-		} else {
-			go menu.ShowTxDialog("Revive", "TX error, check logs", tx, 3*time.Second, d.Window)
-		}
+			}
+		}()
 
 		resetToTabs()
 	})
@@ -1335,11 +1321,8 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				return
 			}
 
-			if tx := StartDuel(rpc.ToAtomic(f, 5), items, rule, dm, aim, char_str, item1_str, item2_str, rpc.SCIDs[duel_curr.Selected]); tx != "" {
-				go menu.ShowTxDialog("Start Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
-			} else {
-				go menu.ShowTxDialog("Start Duel", "TX error, check logs", tx, 3*time.Second, d.Window)
-			}
+			tx := StartDuel(rpc.ToAtomic(f, 5), items, rule, dm, aim, char_str, item1_str, item2_str, rpc.SCIDs[duel_curr.Selected])
+			go menu.ShowTxDialog("Start Duel", "Duels", tx, 3*time.Second, d.Window)
 
 			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
 			max.Objects[0].(*container.Split).Trailing.Refresh()
@@ -1369,11 +1352,8 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				items++
 			}
 
-			if tx := Duels.Index[selected_join].AcceptDuel(items, uint64(opt_select.SelectedIndex()), char_str, item1_str, item2_str); tx != "" {
-				go menu.ShowTxDialog("Accept Duel", fmt.Sprintf("TXID: %s", tx), tx, 3*time.Second, d.Window)
-			} else {
-				go menu.ShowTxDialog("Accept Duel", "TX error, check logs", tx, 3*time.Second, d.Window)
-			}
+			tx := Duels.Index[selected_join].AcceptDuel(items, uint64(opt_select.SelectedIndex()), char_str, item1_str, item2_str)
+			go menu.ShowTxDialog("Accept Duel", "Duels", tx, 3*time.Second, d.Window)
 
 			accepting_duel = false
 			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
