@@ -418,6 +418,15 @@ func refGetJoins() {
 							Value:   0,
 						},
 					}
+
+					if !e.validateCollection(false) {
+						logger.Warnln("[refGetJoins] Not a valid duelist, refunding")
+						retry := 0
+						tx := Refund(n)
+						time.Sleep(time.Second)
+						retry += rpc.ConfirmTxRetry(tx, "refService", 60)
+						continue
+					}
 					Duels.WriteEntry(u, e)
 					Joins.All = append(Joins.All, u)
 				} else if e.Opponent.Icon.Char == nil && !Joins.ExistsIndex(u) {
@@ -545,6 +554,15 @@ func processReady() {
 
 	for u, e := range Duels.Index {
 		if e.Ready > 0 && !e.Complete {
+			if !e.validateCollection(true) || !e.validateCollection(false) {
+				logger.Warnln("[processReady] Not a valid collection, refunding")
+				retry := 0
+				tx := Refund(strconv.FormatUint(u, 10))
+				time.Sleep(time.Second)
+				retry += rpc.ConfirmTxRetry(tx, "refService", 60)
+				continue
+			}
+
 			now := time.Now().Unix()
 			stamp := int64(e.Ready) + 60
 			// Will wait a minute after ready stamp before calling refDuel()
@@ -552,7 +570,7 @@ func processReady() {
 				logger.Printf("[processReady] Processing #%s   Death match (%s)   Hardcore (%s)\n", e.Num, e.DM, e.Rule)
 				retry := 0
 				for retry < 4 {
-					tx := Duels.Index[u].refDuel()
+					tx := e.refDuel()
 					time.Sleep(time.Second)
 					retry += rpc.ConfirmTxRetry(tx, "refService", 60)
 				}
@@ -564,7 +582,7 @@ func processReady() {
 				logger.Printf("[processReady] Processing #%s   Death match (%s)   Hardcore (%s)\n", e.Num, e.DM, e.Rule)
 				retry := 0
 				for retry < 4 {
-					tx := Duels.Index[u].refDuel()
+					tx := e.refDuel()
 					time.Sleep(time.Second)
 					retry += rpc.ConfirmTxRetry(tx, "refService", 60)
 				}

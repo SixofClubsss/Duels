@@ -457,10 +457,14 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			Duels.RLock()
 			defer Duels.RUnlock()
 
-			validated := Duels.Index[selected_join].validateCollection()
+			validated := Duels.Index[selected_join].validateCollection(false)
 
 			if rpc.Wallet.Address == Duels.Index[selected_join].Duelist.Address || (checkOwnerAndRefs() && !validated) {
-				dialog.NewConfirm("Cancel Duel", "Would you like to cancel this Duel?", func(b bool) {
+				prefix := "W"
+				if !validated {
+					prefix = "Duelist not valid, w"
+				}
+				dialog.NewConfirm("Cancel Duel", fmt.Sprintf("%sould you like to cancel this Duel?", prefix), func(b bool) {
 					if b {
 						if n := strconv.FormatUint(selected_join, 10); n != "" {
 							tx := Refund(n)
@@ -736,6 +740,8 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				Duels.RLock()
 				defer Duels.RUnlock()
 
+				o.(*fyne.Container).Objects[2].(*widget.Label).SetText(fmt.Sprintf("Ready for: %v", Duels.Index[id].readySince()))
+
 				header := fmt.Sprintf("Duel #%s   Pot: (%s %s)   Items: (%d)   Death Match: (%s)", Duels.Index[id].Num, rpc.FromAtomic(Duels.Index[id].Amt*2, 5), Duels.Index[id].assetName(), Duels.Index[id].Items, Duels.Index[id].DM)
 				if Duels.Index[id].Opponent.Char != "" && o.(*fyne.Container).Objects[1].(*widget.Label).Text != header {
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*widget.Label).SetText(chopAddr(Duels.Index[id].Duelist.Address))
@@ -745,8 +751,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Opponent.getRankString())
 
 					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(header)
-
-					o.(*fyne.Container).Objects[2].(*widget.Label).SetText(fmt.Sprintf("Ready for: %v", Duels.Index[id].readySince()))
 
 					if Duels.Index[id].Items > 1 {
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
@@ -895,7 +899,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 				sc_label := fmt.Sprintf("SCID: %s", Graveyard.Index[id].Char)
 
-				if Graveyard.Index[id].Char != "" && o.(*fyne.Container).Objects[2].(*widget.Label).Text != sc_label {
+				if Graveyard.Index[id].Char != "" {
 					now := time.Now()
 					avail := time.Unix(Graveyard.Index[id].Time, 0)
 
@@ -1137,10 +1141,16 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	tabs.OnSelected = func(ti *container.TabItem) {
 		switch ti.Text {
 		case "Join":
-			selected_duel = 0
+			Joins.List.UnselectAll()
+			selected_join = 0
 		case "Duels":
 			Ready.List.UnselectAll()
 			selected_duel = 0
+		case "Graves":
+			Graveyard.List.UnselectAll()
+			selected_grave = 0
+		case "Results":
+			Finals.List.UnselectAll()
 		}
 	}
 

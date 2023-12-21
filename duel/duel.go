@@ -584,13 +584,20 @@ func (duel entry) assetName() (asset_name string) {
 }
 
 // Check all assets used for duel are valid
-func (duel entry) validateCollection() bool {
+func (duel entry) validateCollection(opponent bool) bool {
 	characters := []string{"Dero Desperados", "Death By Cupcake", "High Strangeness"}
 	items := []string{"Desperado Guns"}
 
+	var validate playerInfo
+	if opponent {
+		validate = duel.Opponent
+	} else {
+		validate = duel.Duelist
+	}
+
 	switch duel.Items {
 	case 0:
-		if coll, _ := gnomon.GetSCIDValuesByKey(duel.Duelist.Char, "collection"); coll != nil {
+		if coll, _ := gnomon.GetSCIDValuesByKey(validate.Char, "collection"); coll != nil {
 			for _, c := range characters {
 				if coll[0] == c {
 					return true
@@ -599,7 +606,7 @@ func (duel entry) validateCollection() bool {
 		}
 	case 1:
 		var validChar bool
-		if coll, _ := gnomon.GetSCIDValuesByKey(duel.Duelist.Char, "collection"); coll != nil {
+		if coll, _ := gnomon.GetSCIDValuesByKey(validate.Char, "collection"); coll != nil {
 			for _, c := range characters {
 				if coll[0] == c {
 					validChar = true
@@ -609,7 +616,7 @@ func (duel entry) validateCollection() bool {
 		}
 
 		if validChar {
-			if item1, _ := gnomon.GetSCIDValuesByKey(duel.Duelist.Item1, "collection"); item1 != nil {
+			if item1, _ := gnomon.GetSCIDValuesByKey(validate.Item1, "collection"); item1 != nil {
 				for _, c := range items {
 					if item1[0] == c {
 						return true
@@ -619,7 +626,7 @@ func (duel entry) validateCollection() bool {
 		}
 	case 2:
 		var validChar bool
-		if coll, _ := gnomon.GetSCIDValuesByKey(duel.Duelist.Char, "collection"); coll != nil {
+		if coll, _ := gnomon.GetSCIDValuesByKey(validate.Char, "collection"); coll != nil {
 			for _, c := range characters {
 				if coll[0] == c {
 					validChar = true
@@ -630,7 +637,7 @@ func (duel entry) validateCollection() bool {
 
 		if validChar {
 			var validItem bool
-			if item1, _ := gnomon.GetSCIDValuesByKey(duel.Duelist.Item1, "collection"); item1 != nil {
+			if item1, _ := gnomon.GetSCIDValuesByKey(validate.Item1, "collection"); item1 != nil {
 				for _, c := range items {
 					if item1[0] == c {
 						validItem = true
@@ -640,7 +647,7 @@ func (duel entry) validateCollection() bool {
 			}
 
 			if validItem {
-				if item2, _ := gnomon.GetSCIDValuesByKey(duel.Duelist.Item1, "collection"); item2 != nil {
+				if item2, _ := gnomon.GetSCIDValuesByKey(validate.Item2, "collection"); item2 != nil {
 					for _, c := range items {
 						if item2[0] == c {
 							return true
