@@ -126,7 +126,7 @@ func StartApp() {
 					connect_box.RefreshBalance()
 					menu.DisableIndexControls(false)
 					if !synced {
-						checkNFAs(app_tag, synced, false, nil)
+						checkNFAs(app_tag, true, false, nil)
 						synced = true
 					}
 				} else {
@@ -195,14 +195,18 @@ func StartApp() {
 }
 
 // Checks for valid duel NFAs
-func checkNFAs(tag string, gc, progress bool, scids map[string]string) {
-	if gnomon.IsReady() && !gc {
+//   - all true clears and syncs menu/duel lists, false does only duel lists
+func checkNFAs(tag string, all, progress bool, scids map[string]string) {
+	if gnomon.IsReady() {
 		if scids == nil {
 			scids = gnomon.GetAllOwnersAndSCIDs()
 		}
 
-		menu.Assets.Asset = []menu.Asset{}
 		Inventory.ClearAll()
+		if all {
+			menu.Assets.Asset = []menu.Asset{}
+		}
+
 		logger.Printf("[%s] Checking NFA Assets\n", tag)
 		if progress {
 			sync_prog.Max = float64(len(scids))
@@ -216,17 +220,19 @@ func checkNFAs(tag string, gc, progress bool, scids map[string]string) {
 			if progress {
 				updateSyncProgress(sync_prog)
 			}
-			checkNFAOwner(sc)
+			checkNFAOwner(sc, all)
 		}
 
-		menu.Assets.SortList()
-		menu.Assets.List.Refresh()
 		Inventory.SortAll()
+		if all {
+			menu.Assets.SortList()
+			menu.Assets.List.Refresh()
+		}
 	}
 }
 
 // Checks for valid NFA owner and adds items to inventory, used only in stand alone version
-func checkNFAOwner(scid string) {
+func checkNFAOwner(scid string, all bool) {
 	if gnomon.IsRunning() {
 		if header, _ := gnomon.GetSCIDValuesByKey(scid, "nameHdr"); header != nil {
 			owner, _ := gnomon.GetSCIDValuesByKey(scid, "owner")
@@ -242,16 +248,24 @@ func checkNFAOwner(scid string) {
 					add.Type = menu.AssetType(collection[0], "typeHdr")
 
 					if collection[0] == "Dero Desperados" {
-						menu.Assets.Add(add, icon[0])
+						if all {
+							menu.Assets.Add(add, icon[0])
+						}
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					} else if collection[0] == "Desperado Guns" {
-						menu.Assets.Add(add, icon[0])
+						if all {
+							menu.Assets.Add(add, icon[0])
+						}
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					} else if collection[0] == "High Strangeness" {
-						menu.Assets.Add(add, icon[0])
+						if all {
+							menu.Assets.Add(add, icon[0])
+						}
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					} else if collection[0] == "Death By Cupcake" {
-						menu.Assets.Add(add, icon[0])
+						if all {
+							menu.Assets.Add(add, icon[0])
+						}
 						AddItemsToInventory(scid, header[0], owner[0], collection[0])
 					}
 				}

@@ -235,7 +235,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	sync_img.SetMinSize(fyne.NewSize(200, 200))
 	sync_cont := container.NewStack(container.NewCenter(container.NewBorder(sync_spacer, sync_label, nil, nil, container.NewCenter(sync_img))), sync_prog)
 
-	options_select := widget.NewSelect([]string{"Recheck Assets", "Claim All", "Clear Cache"}, nil)
+	options_select := widget.NewSelect([]string{"Rescan", "Claim All", "Clear Cache"}, nil)
 	options_select.PlaceHolder = "Options:"
 
 	equip_cont := container.NewBorder(
@@ -247,9 +247,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 	options_select.OnChanged = func(s string) {
 		switch s {
-		case "Recheck Assets":
+		case "Rescan":
 			if rpc.IsReady() {
-				dialog.NewConfirm("Recheck Assets", "Would you like to recheck wallet for Duel assets?", func(b bool) {
+				dialog.NewConfirm("Rescan", "Would you like to rescan wallet for Duel assets?", func(b bool) {
 					if b {
 						total_rank_label.Text = ""
 						sync_label.SetText("Scanning Assets...")
@@ -267,7 +267,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					}
 				}, d.Window).Show()
 			} else {
-				dialog.NewInformation("Recheck Assets", "You are not connected to daemon or wallet", d.Window).Show()
+				dialog.NewInformation("Rescan", "You are not connected to daemon or wallet", d.Window).Show()
 			}
 		case "Claim All":
 			if rpc.IsReady() {
