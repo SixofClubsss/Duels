@@ -1129,8 +1129,8 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 	tabs = container.NewAppTabs(
 		container.NewTabItemWithIcon("", ResourceDuelCirclePng, layout.NewSpacer()),
-		container.NewTabItem("Join", container.NewBorder(nil, search.joins.searchDuels([]string{"Address", "Amount", "Currency", "Death Match", "My Duels"}, false, &Joins, d), nil, nil, Joins.List)),
-		container.NewTabItem("Duels", container.NewBorder(nil, search.ready.searchDuels([]string{"Address", "Amount", "Currency", "Death Match", "My Duels"}, false, &Ready, d), nil, nil, Ready.List)),
+		container.NewTabItem("Join", container.NewBorder(nil, search.joins.searchDuels([]string{"Address", "Amount", "Currency", "Death Match"}, false, &Joins, d), nil, nil, Joins.List)),
+		container.NewTabItem("Duels", container.NewBorder(nil, search.ready.searchDuels([]string{"Address", "Amount", "Currency", "Death Match"}, false, &Ready, d), nil, nil, Ready.List)),
 		container.NewTabItem("Graves", container.NewBorder(nil, search.graves.searchGraves(d), nil, nil, Graveyard.List)),
 		container.NewTabItem("Results", container.NewBorder(nil, search.results.searchDuels([]string{"Address", "Amount", "Currency", "Death Match", "My Duels", "Odds"}, true, &Finals, d), nil, nil, Finals.List)),
 		container.NewTabItem("Leaders", Leaders.list))
@@ -1625,12 +1625,12 @@ func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d
 		s.results = nil
 		switch search_select.Selected {
 		case "Address":
-			if len(search_entry.Text) != 64 {
+			if len(search_entry.Text) != 66 {
 				dialog.NewInformation("Search", "Not a valid address", d.Window).Show()
 				return
 			}
 			for u, r := range Duels.Index {
-				if r.Duelist.Address == "s" || r.Opponent.Address == "" {
+				if r.Duelist.Address == search_entry.Text || r.Opponent.Address == search_entry.Text {
 					if r.Complete == complete {
 						s.results = append(s.results, u)
 					}
