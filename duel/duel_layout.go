@@ -1107,11 +1107,48 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			}()
 		})
 
+	// Shows SCIDs of chars and items used
 	Finals.List.OnSelected = func(id widget.ListItemID) {
-		// Doing nothing here for now
+		Duels.RLock()
+		defer Duels.RUnlock()
 
-		// playAnimation(Duels.Index[Finals.All[id]].Winner, max, tabs)
-		// resetToTabs()
+		i := Finals.All[id]
+
+		buildCont := func(s string) *fyne.Container {
+			entry := widget.NewEntry()
+			entry.SetText(s)
+
+			copy := widget.NewButtonWithIcon("", dreams.FyneIcon("contentCopy"), func() { d.Window.Clipboard().SetContent(s) })
+			copy.Importance = widget.LowImportance
+
+			return container.NewBorder(nil, nil, nil, copy, entry)
+		}
+
+		var duelist_form, opponent_form []*widget.FormItem
+		duelist_form = append(duelist_form, widget.NewFormItem("Duelist", layout.NewSpacer()))
+		opponent_form = append(opponent_form, widget.NewFormItem("Opponent", layout.NewSpacer()))
+
+		duelist_form = append(duelist_form, widget.NewFormItem("Character", buildCont(Duels.Index[i].Duelist.Char)))
+		opponent_form = append(opponent_form, widget.NewFormItem("Character", buildCont(Duels.Index[i].Opponent.Char)))
+
+		if Duels.Index[i].Items > 0 {
+			duelist_form = append(duelist_form, widget.NewFormItem("Item 1", buildCont(Duels.Index[i].Duelist.Item1)))
+			opponent_form = append(opponent_form, widget.NewFormItem("Item 1", buildCont(Duels.Index[i].Opponent.Item1)))
+		}
+
+		if Duels.Index[i].Items > 1 {
+			duelist_form = append(duelist_form, widget.NewFormItem("Item 2", buildCont(Duels.Index[i].Duelist.Item2)))
+			opponent_form = append(opponent_form, widget.NewFormItem("Item 2", buildCont(Duels.Index[i].Opponent.Item2)))
+		}
+
+		duelist_form = append(duelist_form, widget.NewFormItem("", dwidget.NewLine(100, 1, bundle.TextColor)))
+
+		max := container.NewVBox(widget.NewForm(duelist_form...), widget.NewForm(opponent_form...))
+
+		dia := dialog.NewCustom("SCIDs", "Done", max, d.Window)
+		dia.Resize(fyne.NewSize(400, 0))
+		dia.SetOnClosed(func() { Finals.List.UnselectAll() })
+		dia.Show()
 	}
 
 	// Leader board list widget
