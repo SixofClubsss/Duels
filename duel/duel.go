@@ -2,21 +2,21 @@ package duel
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 
 	//xwidget "fyne.io/x/fyne/widget"
 	"github.com/civilware/Gnomon/structures"
 	dreams "github.com/dReam-dApps/dReams"
 	"github.com/dReam-dApps/dReams/dwidget"
-	"github.com/dReam-dApps/dReams/menu"
+	"github.com/dReam-dApps/dReams/gnomes"
 	"github.com/dReam-dApps/dReams/rpc"
 	"github.com/sirupsen/logrus"
 )
@@ -87,6 +87,13 @@ var Joins dwidget.Lists
 var Ready dwidget.Lists
 var Finals dwidget.Lists
 
+func init() {
+	Duels.Index = make(map[uint64]entry)
+	Graveyard.Index = make(map[uint64]grave)
+	Inventory.characters = make(map[string]asset)
+	Inventory.items = make(map[string]asset)
+}
+
 // Menu intro for dReams app
 func DreamsMenuIntro() (entries map[string][]string) {
 	entries = map[string][]string{
@@ -100,7 +107,7 @@ func DreamsMenuIntro() (entries map[string][]string) {
 			"Game Modes",
 			"How to play"},
 
-		"Collections": {"Dero Desperados", "Desperados Guns", "More to come..."},
+		"Collections": {"Dero Desperados", "Desperados Guns", "High Strangeness", "Death By Cupcake", "More to come..."},
 
 		"Game Modes": {"Death match", "Hardcore"},
 
@@ -194,10 +201,10 @@ func (d *entries) SingleEntry(i uint64) (entry entry) {
 
 // Gets joinable duels
 func GetJoins() (update bool) {
-	if menu.Gnomes.IsReady() {
-		_, initValue := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "init")
+	if gnomon.IsReady() {
+		_, initValue := gnomon.GetSCIDValuesByKey(DUELSCID, "init")
 		if initValue != nil {
-			if _, rounds := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "rds"); rounds != nil {
+			if _, rounds := gnomon.GetSCIDValuesByKey(DUELSCID, "rds"); rounds != nil {
 				Duels.Total = int(rounds[0])
 			}
 
@@ -208,14 +215,16 @@ func GetJoins() (update bool) {
 					break
 				}
 
-				if !rpc.Wallet.IsConnected() || !menu.Gnomes.IsReady() {
+				if !rpc.Wallet.IsConnected() || !gnomon.IsReady() {
 					break
 				}
+
+				updateSyncProgress(sync_prog)
 
 				e := Duels.SingleEntry(u)
 
 				n := strconv.Itoa(int(u))
-				_, init := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "init_"+n)
+				_, init := gnomon.GetSCIDValuesByKey(DUELSCID, "init_"+n)
 				if init == nil || init[0] == 0 {
 					Duels.Lock()
 					delete(Duels.Index, u)
@@ -229,13 +238,13 @@ func GetJoins() (update bool) {
 				if e.Num == "" {
 					logger.Debugln("[GetJoins] Making")
 
-					_, buffer := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "stamp_"+n)
+					_, buffer := gnomon.GetSCIDValuesByKey(DUELSCID, "stamp_"+n)
 					if buffer == nil {
 						logger.Debugf("[GetAllDuels] %s no start stamp\n", n)
 						buffer = append(buffer, 0)
 					}
 
-					address, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "own_a_"+n)
+					address, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "own_a_"+n)
 					if address == nil {
 						logger.Debugf("[GetJoins] %s no address\n", n)
 						continue
@@ -246,14 +255,14 @@ func GetJoins() (update bool) {
 						continue
 					}
 
-					_, items := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "items_"+n)
+					_, items := gnomon.GetSCIDValuesByKey(DUELSCID, "items_"+n)
 					if items == nil {
 						logger.Debugf("[GetJoins] %s no items\n", n)
 						continue
 					}
 
 					deathmatch := "No"
-					_, dm := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "dm_"+n)
+					_, dm := gnomon.GetSCIDValuesByKey(DUELSCID, "dm_"+n)
 					if dm == nil {
 						logger.Debugf("[GetJoins] %s no dm\n", n)
 						continue
@@ -264,7 +273,7 @@ func GetJoins() (update bool) {
 					}
 
 					hardcore := "No"
-					_, rule := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "rule_"+n)
+					_, rule := gnomon.GetSCIDValuesByKey(DUELSCID, "rule_"+n)
 					if rule == nil {
 						logger.Debugf("[GetJoins] %s no rule\n", n)
 						continue
@@ -274,19 +283,19 @@ func GetJoins() (update bool) {
 						hardcore = "Yes"
 					}
 
-					_, amt := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "amt_"+n)
+					_, amt := gnomon.GetSCIDValuesByKey(DUELSCID, "amt_"+n)
 					if amt == nil {
 						logger.Debugf("[GetJoins] %s no amt\n", n)
 						continue
 					}
 
-					_, option := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "op_a_"+n)
+					_, option := gnomon.GetSCIDValuesByKey(DUELSCID, "op_a_"+n)
 					if option == nil {
 						logger.Debugf("[GetJoins] %s no optA\n", n)
 						continue
 					}
 
-					charA, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "ch_a_"+n)
+					charA, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "ch_a_"+n)
 					if charA == nil {
 						logger.Debugf("[GetJoins] %s no charA\n", n)
 						continue
@@ -298,7 +307,7 @@ func GetJoins() (update bool) {
 						logger.Debugf("[GetJoins] %s charIconA %v\n", n, err)
 					}
 
-					token, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "tkn_"+n)
+					token, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "tkn_"+n)
 					if token == nil {
 						logger.Debugf("[GetJoins] %s no token\n", n)
 						token = append(token, "")
@@ -307,7 +316,7 @@ func GetJoins() (update bool) {
 					var item1Str, item2Str string
 					var item1Img, item2Img []byte
 					if items[0] >= 1 {
-						item1, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "i1_a_"+n)
+						item1, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "i1_a_"+n)
 						if item1 == nil {
 							logger.Debugf("[GetJoins] %s should be a item1\n", n)
 							continue
@@ -322,7 +331,7 @@ func GetJoins() (update bool) {
 					}
 
 					if items[0] == 2 {
-						item2, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "i2_a_"+n)
+						item2, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "i2_a_"+n)
 						if item2 == nil {
 							logger.Debugf("[GetJoins] %s should be a item2\n", n)
 							continue
@@ -380,11 +389,13 @@ func GetJoins() (update bool) {
 
 // Gets already joined duels awaiting ref
 func GetAllDuels() (update bool) {
-	if menu.Gnomes.IsReady() {
+	if gnomon.IsReady() {
 		for u, v := range Duels.Index {
-			if !rpc.Wallet.IsConnected() || !menu.Gnomes.IsReady() {
+			if !rpc.Wallet.IsConnected() || !gnomon.IsReady() {
 				break
 			}
+
+			updateSyncProgress(sync_prog)
 
 			if v.Opponent.Char != "" {
 				if Ready.ExistsIndex(u) {
@@ -399,20 +410,20 @@ func GetAllDuels() (update bool) {
 			}
 
 			n := strconv.Itoa(int(u))
-			if _, init := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "init_"+n); init != nil {
-				address, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "own_b_"+n)
+			if _, init := gnomon.GetSCIDValuesByKey(DUELSCID, "init_"+n); init != nil {
+				address, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "own_b_"+n)
 				if address == nil {
 					logger.Debugf("[GetAllDuels] %s no address B\n", n)
 					continue
 				}
 
-				_, ready_stamp := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "ready_"+n)
+				_, ready_stamp := gnomon.GetSCIDValuesByKey(DUELSCID, "ready_"+n)
 				if ready_stamp == nil {
 					logger.Debugf("[GetAllDuels] %s no ready stamp\n", n)
 					ready_stamp = append(ready_stamp, 0)
 				}
 
-				char, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "ch_b_"+n)
+				char, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "ch_b_"+n)
 				if char == nil {
 					logger.Debugf("[GetAllDuels] %s no charB\n", n)
 					continue
@@ -424,19 +435,19 @@ func GetAllDuels() (update bool) {
 					logger.Debugf("[GetAllDuels] %s charIconB %v\n", n, err)
 				}
 
-				_, option := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "op_b_"+n)
+				_, option := gnomon.GetSCIDValuesByKey(DUELSCID, "op_b_"+n)
 				if option == nil {
 					logger.Debugf("[GetAllDuels] %s no optB\n", n)
 					continue
 				}
 
-				_, valA := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "v_a_"+n)
+				_, valA := gnomon.GetSCIDValuesByKey(DUELSCID, "v_a_"+n)
 				if valA == nil {
 					logger.Debugf("[GetAllDuels] %s no valA\n", n)
 					continue
 				}
 
-				_, valB := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "v_b_"+n)
+				_, valB := gnomon.GetSCIDValuesByKey(DUELSCID, "v_b_"+n)
 				if valB == nil {
 					logger.Debugf("[GetAllDuels] %s no valB\n", n)
 					continue
@@ -445,7 +456,7 @@ func GetAllDuels() (update bool) {
 				var item1Str, item2Str string
 				var item1Img, item2Img []byte
 				if v.Items >= 1 && v.Opponent.Icon.Item1 == nil {
-					item1, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "i1_b_"+n)
+					item1, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "i1_b_"+n)
 					if item1 == nil {
 						logger.Debugf("[GetAllDuels] %s should be a item1\n", n)
 						continue
@@ -460,7 +471,7 @@ func GetAllDuels() (update bool) {
 				}
 
 				if v.Items == 2 && v.Opponent.Icon.Item2 == nil {
-					item2, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "i2_b_"+n)
+					item2, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "i2_b_"+n)
 					if item2 == nil {
 						logger.Debugf("[GetAllDuels] %s should be a item2\n", n)
 						continue
@@ -514,15 +525,17 @@ func GetAllDuels() (update bool) {
 
 // Gets final duel results
 func GetFinals() (update bool) {
-	if menu.Gnomes.IsReady() {
+	if gnomon.IsReady() {
 		for u, v := range Duels.Index {
-			if !rpc.Wallet.IsConnected() || !menu.Gnomes.IsReady() {
+			if !rpc.Wallet.IsConnected() || !gnomon.IsReady() {
 				break
 			}
 
+			updateSyncProgress(sync_prog)
+
 			n := strconv.Itoa(int(u))
 			if !v.Complete {
-				if final, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "final_"+n); final != nil {
+				if final, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "final_"+n); final != nil {
 					if winner := strings.Split(final[0], "_"); len(winner) >= 3 {
 						v.Winner = rpc.DeroAddressFromKey(winner[0])
 						v.Odds = rpc.Uint64Type(winner[2])
@@ -571,13 +584,20 @@ func (duel entry) assetName() (asset_name string) {
 }
 
 // Check all assets used for duel are valid
-func (duel entry) validateCollection() bool {
-	characters := []string{"Dero Desperados", "TestChars"}
-	items := []string{"Desperado Guns", "TestItems"}
+func (duel entry) validateCollection(opponent bool) bool {
+	characters := []string{"Dero Desperados", "Death By Cupcake", "High Strangeness"}
+	items := []string{"Desperado Guns"}
+
+	var validate playerInfo
+	if opponent {
+		validate = duel.Opponent
+	} else {
+		validate = duel.Duelist
+	}
 
 	switch duel.Items {
 	case 0:
-		if coll, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Char, "collection"); coll != nil {
+		if coll, _ := gnomon.GetSCIDValuesByKey(validate.Char, "collection"); coll != nil {
 			for _, c := range characters {
 				if coll[0] == c {
 					return true
@@ -586,7 +606,7 @@ func (duel entry) validateCollection() bool {
 		}
 	case 1:
 		var validChar bool
-		if coll, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Char, "collection"); coll != nil {
+		if coll, _ := gnomon.GetSCIDValuesByKey(validate.Char, "collection"); coll != nil {
 			for _, c := range characters {
 				if coll[0] == c {
 					validChar = true
@@ -596,7 +616,7 @@ func (duel entry) validateCollection() bool {
 		}
 
 		if validChar {
-			if item1, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Item1, "collection"); item1 != nil {
+			if item1, _ := gnomon.GetSCIDValuesByKey(validate.Item1, "collection"); item1 != nil {
 				for _, c := range items {
 					if item1[0] == c {
 						return true
@@ -606,7 +626,7 @@ func (duel entry) validateCollection() bool {
 		}
 	case 2:
 		var validChar bool
-		if coll, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Char, "collection"); coll != nil {
+		if coll, _ := gnomon.GetSCIDValuesByKey(validate.Char, "collection"); coll != nil {
 			for _, c := range characters {
 				if coll[0] == c {
 					validChar = true
@@ -617,7 +637,7 @@ func (duel entry) validateCollection() bool {
 
 		if validChar {
 			var validItem bool
-			if item1, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Item1, "collection"); item1 != nil {
+			if item1, _ := gnomon.GetSCIDValuesByKey(validate.Item1, "collection"); item1 != nil {
 				for _, c := range items {
 					if item1[0] == c {
 						validItem = true
@@ -627,7 +647,7 @@ func (duel entry) validateCollection() bool {
 			}
 
 			if validItem {
-				if item2, _ := menu.Gnomes.GetSCIDValuesByKey(duel.Duelist.Item1, "collection"); item2 != nil {
+				if item2, _ := gnomon.GetSCIDValuesByKey(validate.Item2, "collection"); item2 != nil {
 					for _, c := range items {
 						if item2[0] == c {
 							return true
@@ -1077,19 +1097,21 @@ func Disconnected() {
 	Leaders.board = []records{}
 	Duels.Index = make(map[uint64]entry)
 	Graveyard.Index = make(map[uint64]grave)
+	Inventory.characters = make(map[string]asset)
+	Inventory.items = make(map[string]asset)
 	Inventory.ClearAll()
 }
 
 // Check if Wallet.Address is owner or ref on duel SC
 func checkOwnerAndRefs() bool {
-	if own, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "owner"); own != nil {
+	if own, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "owner"); own != nil {
 		if rpc.Wallet.Address == own[0] {
 			return true
 		}
 	}
 
 	for i := 0; i < 10; i++ {
-		if ref, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "ref"+strconv.Itoa(i)); ref != nil {
+		if ref, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "ref"+strconv.Itoa(i)); ref != nil {
 			if rpc.Wallet.Address == ref[0] {
 				return true
 			}
@@ -1097,74 +1119,6 @@ func checkOwnerAndRefs() bool {
 	}
 
 	return false
-}
-
-// Checks if wallet has any claimable duel NFAs, looking for dst from ref transfer
-func checkClaimable() (claimable []string) {
-	entries := rpc.GetWalletTransfers(2450000, uint64(rpc.Wallet.Height), uint64(0xA1B2C3D4E5F67890))
-	for _, e := range *entries {
-		split := strings.Split(string(e.Payload), "  ")
-		if len(split) > 2 && len(split[1]) == 64 {
-			if menu.CheckOwner(split[1]) || rpc.TokenBalance(split[1]) != 1 {
-				continue
-			}
-
-			var have bool
-			for _, sc := range claimable {
-				if sc == split[1] {
-					have = true
-					break
-				}
-			}
-
-			if !have {
-				claimable = append(claimable, split[1])
-			}
-		}
-	}
-
-	return
-}
-
-// Call ClaimOwnership on SC and confirm tx on all claimable
-func claimClaimable(claimable []string, d *dreams.AppObject) {
-	wait := true
-	progress_label := dwidget.NewCenterLabel("")
-	progress := widget.NewProgressBar()
-	progress_cont := container.NewBorder(nil, progress_label, nil, nil, progress)
-	progress.Min = float64(0)
-	progress.Max = float64(len(claimable))
-	wait_message := dialog.NewCustom("Claiming Duel Assets", "Stop", progress_cont, d.Window)
-	wait_message.Resize(fyne.NewSize(610, 150))
-	wait_message.SetOnClosed(func() {
-		wait = false
-	})
-	wait_message.Show()
-
-	for i, claim := range claimable {
-		if !wait {
-			break
-		}
-
-		retry := 0
-		for retry < 4 {
-			if !wait {
-				break
-			}
-
-			progress.SetValue(float64(i))
-			progress_label.SetText(fmt.Sprintf("Claiming: %s\n\nPlease wait for TX to be confirmed", claim))
-			tx := rpc.ClaimNFA(claim)
-			time.Sleep(time.Second)
-			retry += rpc.ConfirmTxRetry(tx, "checkClaimable", 45)
-
-			retry++
-
-		}
-	}
-	progress.SetValue(progress.Value + 1)
-	progress_label.SetText("Completed all claims")
-	wait_message.SetDismissText("Done")
 }
 
 // func playAnimation(address string, obj *fyne.Container, reset fyne.CanvasObject) {
@@ -1192,3 +1146,40 @@ func claimClaimable(claimable []string, d *dreams.AppObject) {
 // 	obj.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = reset
 // 	obj.Objects[0].(*container.Split).Trailing.Refresh()
 // }
+
+// Download NFA SCID icon image file as []byte
+func downloadBytes(scid string) ([]byte, error) {
+	client := http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(findCollectionURL(scid))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	image, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return image, nil
+}
+
+// Find which images should be used for a collection, icon or main file
+func findCollectionURL(scid string) (url string) {
+	if gnomon.IsReady() {
+		w := 1
+		coll, _ := gnomon.GetSCIDValuesByKey(scid, "collection")
+		if coll != nil {
+			switch coll[0] {
+			case "High Strangeness":
+				w = 0
+			default:
+				// nothing, w 1 is icon
+			}
+
+			url = gnomes.GetAssetUrl(w, scid)
+		}
+	}
+
+	return
+}

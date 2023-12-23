@@ -41,7 +41,7 @@ var Inventory inventory
 // Creates a 100x100 icon with frame
 //   - Pass icon image as []byte
 func iconLarge(icon []byte, name string) fyne.CanvasObject {
-	frame := canvas.NewImageFromResource(bundle.ResourceAvatarFramePng)
+	frame := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	frame.SetMinSize(fyne.NewSize(100, 100))
 
 	if icon == nil {
@@ -50,20 +50,20 @@ func iconLarge(icon []byte, name string) fyne.CanvasObject {
 
 	canv := canvas.NewImageFromReader(bytes.NewReader(icon), name)
 	if canv == nil {
-		return container.NewMax(frame)
+		return container.NewStack(frame)
 	}
 
 	canv.SetMinSize(fyne.NewSize(90, 90))
 	border := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), layout.NewSpacer(), layout.NewSpacer(), canv)
 
-	return container.NewMax(border, frame)
+	return container.NewStack(border, frame)
 }
 
 // Creates a 60x60 icon with frame
 //   - Pass icon image as []byte
 //   - Pass died as true to X out icon
 func iconSmall(icon []byte, name string, died bool) fyne.CanvasObject {
-	frame := canvas.NewImageFromResource(bundle.ResourceAvatarFramePng)
+	frame := canvas.NewImageFromResource(bundle.ResourceFramePng)
 	frame.SetMinSize(fyne.NewSize(60, 60))
 
 	if icon == nil {
@@ -72,13 +72,13 @@ func iconSmall(icon []byte, name string, died bool) fyne.CanvasObject {
 
 	canv := canvas.NewImageFromReader(bytes.NewReader(icon), name)
 	if canv == nil {
-		return container.NewMax(frame)
+		return container.NewStack(frame)
 	}
 
 	canv.SetMinSize(fyne.NewSize(55, 55))
 	border := container.NewBorder(layout.NewSpacer(), layout.NewSpacer(), layout.NewSpacer(), layout.NewSpacer(), canv)
 
-	max := container.NewMax(border)
+	max := container.NewStack(border)
 	if died {
 		x := canvas.NewImageFromResource(resourceDiedPng)
 		x.SetMinSize(fyne.NewSize(60, 60))
@@ -104,7 +104,7 @@ func removeRank(str string) (newStr string) {
 
 // Check if SCID has a valid duel rank
 func validateAssetRank(scid string) uint64 {
-	if desc, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "descrHdr"); desc != nil {
+	if desc, _ := gnomon.GetSCIDValuesByKey(scid, "descrHdr"); desc != nil {
 		var rank assetRank
 		split := strings.Split(desc[0], ";;")
 
@@ -125,8 +125,10 @@ func validateAssetRank(scid string) uint64 {
 
 // Add duel character asset to inventory and download icon image
 func (inv *inventory) AddCharToInventory(name string) {
-	scid := menu.Assets.Asset_map[name]
+	scid := menu.Assets.SCIDs[name]
 	img, err := downloadBytes(scid)
+	inv.Lock()
+	defer inv.Unlock()
 	if err != nil {
 		inv.characters[name] = asset{
 			rank: 0,
@@ -135,18 +137,18 @@ func (inv *inventory) AddCharToInventory(name string) {
 		return
 	}
 
-	inv.Lock()
 	inv.characters[name] = asset{
 		rank: validateAssetRank(scid),
 		img:  img,
 	}
-	inv.Unlock()
 }
 
 // Add duel item asset to inventory and download icon image
 func (inv *inventory) AddItemToInventory(name string) {
-	scid := menu.Assets.Asset_map[name]
+	scid := menu.Assets.SCIDs[name]
 	img, err := downloadBytes(scid)
+	inv.Lock()
+	defer inv.Unlock()
 	if err != nil {
 		inv.items[name] = asset{
 			rank: 0,
@@ -155,12 +157,10 @@ func (inv *inventory) AddItemToInventory(name string) {
 		return
 	}
 
-	inv.Lock()
 	inv.items[name] = asset{
 		rank: validateAssetRank(scid),
 		img:  img,
 	}
-	inv.Unlock()
 }
 
 // Sort all inventory select options
@@ -207,10 +207,11 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 		return
 	}
 
-	if desc, _ := menu.Gnomes.GetSCIDValuesByKey(scid, "descrHdr"); desc != nil {
+	if desc, _ := gnomon.GetSCIDValuesByKey(scid, "descrHdr"); desc != nil {
 		var rank assetRank
 		splitDesc := strings.Split(desc[0], ";;")
-		if len(splitDesc) > 0 {
+		if len(splitDesc) > 1 {
+			// Ranked assets
 			switch collection {
 			case "Dero Desperados":
 				if err := json.Unmarshal([]byte(rpc.HexToString(splitDesc[1])), &rank); err != nil {
@@ -229,26 +230,16 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 				Inventory.Item1.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
 				Inventory.Item2.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
 				go Inventory.AddItemToInventory(header)
+			}
+		} else {
+			rank := 1
+			switch collection {
 			case "High Strangeness":
-				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, 1), owner)
+				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, rank), owner)
 				go Inventory.AddCharToInventory(header)
-			case "TestChars":
-				if err := json.Unmarshal([]byte(rpc.HexToString(splitDesc[1])), &rank); err != nil {
-					logger.Errorln("[AddItemsToInventory]", err)
-					return
-				}
-
-				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
+			case "Death By Cupcake":
+				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, rank), owner)
 				go Inventory.AddCharToInventory(header)
-			case "TestItems":
-				if err := json.Unmarshal([]byte(rpc.HexToString(splitDesc[1])), &rank); err != nil {
-					logger.Errorln("[AddItemsToInventory]", err)
-					return
-				}
-
-				Inventory.Item1.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
-				Inventory.Item2.Add(fmt.Sprintf("%s {R%d}", header, rank.Rank), owner)
-				go Inventory.AddItemToInventory(header)
 			}
 		}
 	}

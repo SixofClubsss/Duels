@@ -1,7 +1,7 @@
 # Duels
 Dero asset duels.
 
-Written in Go and using [Fyne Toolkit](https://fyne.io/), **Duels** is built on Dero's private L1. Powered by [Gnomon](https://github.com/civilware/Gnomon) and [dReams](https://github.com/dReam-dApps/dReams), **Duels** allows Dero users to pit their Dero assets against each other in PvP duels. Modeled after the duels that took place in the days of wild west, **Duels** has a variety of game modes to choose from. 
+Written in Go and using [Fyne Toolkit](https://fyne.io/), **Duels** is built on Dero's private L1. Powered by [Gnomon](https://github.com/civilware/Gnomon) and [dReams](https://github.com/dReam-dApps/dReams), **Duels** allows Dero users to pit their Dero assets against each other in PvP duels. Modeled after the duels that took place in the days of wild west, **Duels** has a variety of game modes to choose from. The game mechanics are essentially higher/lower, where the outcome is derived on chain.
 
 
 ![goMod](https://img.shields.io/github/go-mod/go-version/SixofClubsss/Duels.svg)![goReport](https://goreportcard.com/badge/github.com/SixofClubsss/Duels)[![goDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://pkg.go.dev/github.com/SixofClubsss/Duels)
@@ -11,17 +11,18 @@ Duels dApp with full features is available for download from [dReams](https://dr
 ![windowsOS](https://raw.githubusercontent.com/SixofClubsss/dreamdappsite/main/assets/os-windows-green.svg)![macOS](https://raw.githubusercontent.com/SixofClubsss/dreamdappsite/main/assets/os-macOS-green.svg)![linuxOS](https://raw.githubusercontent.com/SixofClubsss/dreamdappsite/main/assets/os-linux-green.svg)
 
 ### Features
-- Regular Duels
-- Death match Duels
-- Hardcore Duels
+- Regular Duels (odds used, requires ref)
+- Death match Duels (winner gets defeated characters items)
+- Hardcore Duels (no odds or ref, quick pace)
+- Combine hardcore and death match modes
+- Graveyard with defeated character revivals
 - Outcome determined by SC
 - Character and item assets with ranking system
 - Payout odds determined by ranking system
-- Graveyard with character revivals
 - Leader board to track wins/loses
 - Multiple currencies supported
 - Auto claim NFA assets
-- Local DB image storage
+- Local DB storage
 - Ref service
 
 ### Build

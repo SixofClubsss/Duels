@@ -10,18 +10,19 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dReam-dApps/dReams/gnomes"
 	"github.com/dReam-dApps/dReams/menu"
 	"github.com/dReam-dApps/dReams/rpc"
 	"github.com/docopt/docopt-go"
 	"github.com/sirupsen/logrus"
 )
 
-var command_line string = `runRefService
+var command_line string = `RefService
 App to run RefService as a single process, powered by Gnomon and dReams.
 
 Usage:
-  runRefService [options]
-  runRefService -h | --help
+  RefService [options]
+  RefService -h | --help
 
 Options:
   -h --help                      Show this screen.
@@ -93,9 +94,9 @@ func RunRefService() {
 	n := runtime.NumCPU()
 	runtime.GOMAXPROCS(n)
 
-	version := rpc.DREAMSv
-	arguments, err := docopt.ParseArgs(command_line, nil, version)
+	gnomes.InitLogrusLog(logrus.InfoLevel)
 
+	arguments, err := docopt.ParseArgs(command_line, nil, Version().String())
 	if err != nil {
 		logger.Fatalf("Error while parsing arguments: %s\n", err)
 	}
@@ -148,24 +149,22 @@ func RunRefService() {
 		}
 	}
 
-	menu.InitLogrusLog(logrus.InfoLevel)
+	gnomon.SetFastsync(fastsync, true, 10000)
+	gnomon.SetParallel(parallel)
+	gnomon.SetDBStorageType("boltdb")
 
-	menu.Gnomes.Trim = true
-	menu.Gnomes.Fast = fastsync
-	menu.Gnomes.Para = parallel
-
-	logger.Println("[runRefService]", version, runtime.GOOS, runtime.GOARCH)
+	logger.Println("[RefService]", version, runtime.GOOS, runtime.GOARCH)
 
 	// Check for daemon connection
 	rpc.Ping()
-	if !rpc.Daemon.Connect {
-		logger.Fatalf("[runRefService] Daemon %s not connected\n", rpc.Daemon.Rpc)
+	if !rpc.Daemon.IsConnected() {
+		logger.Fatalf("[RefService] Daemon %s not connected\n", rpc.Daemon.Rpc)
 	}
 
 	// Check for wallet connection
-	rpc.GetAddress("runRefService")
-	if !rpc.Wallet.Connect {
-		os.Exit(1)
+	rpc.GetAddress("RefService")
+	if !rpc.Wallet.IsConnected() {
+		logger.Fatalf("[RefService] Wallet %s not connected\n", rpc.Wallet.Rpc)
 	}
 
 	// Handle ctrl-c close
@@ -174,45 +173,43 @@ func RunRefService() {
 	go func() {
 		<-c
 		fmt.Println()
-		menu.Gnomes.Stop("runRefService")
+		gnomon.Stop("RefService")
 		rpc.Wallet.Connected(false)
 		Service.Stop()
+		menu.SetClose(true)
 		for Service.IsProcessing() {
-			logger.Println("[runRefService] Waiting for service to close")
+			logger.Println("[RefService] Waiting for service to close")
 			time.Sleep(3 * time.Second)
 		}
-		logger.Println("[runRefService] Closing")
+		logger.Println("[RefService] Closing")
 		os.Exit(0)
 	}()
 
 	// Set up Gnomon search filters for Duel
-	filter := []string{rpc.GetSCCode(DUELSCID), menu.NFA_SEARCH_FILTER}
-
-	// Set up SCID rating map
-	menu.Control.Contract_rating = make(map[string]uint64)
+	filter := []string{rpc.GetSCCode(DUELSCID), gnomes.NFA_SEARCH_FILTER}
 
 	// Start Gnomon with search filters
-	go menu.StartGnomon("runRefService", "boltdb", filter, 0, 0, nil)
+	go gnomes.StartGnomon("RefService", gnomon.DBStorageType(), filter, 0, 0, nil)
 
 	// Routine for checking daemon, wallet connection and Gnomon sync
 	go func() {
-		for !menu.Gnomes.IsInitialized() {
+		for !menu.IsClosing() && !gnomon.IsInitialized() {
 			time.Sleep(time.Second)
 		}
 
-		logger.Println("[runRefService] Starting when Gnomon is synced")
-		for menu.Gnomes.IsRunning() && rpc.IsReady() {
+		logger.Println("[RefService] Starting when Gnomon is synced")
+		for !menu.IsClosing() && gnomon.IsRunning() && rpc.IsReady() {
 			rpc.Ping()
-			rpc.EchoWallet("runRefService")
-			menu.Gnomes.IndexContains()
-			if menu.Gnomes.Indexer.LastIndexedHeight >= menu.Gnomes.Indexer.ChainHeight-3 && menu.Gnomes.HasIndex(1) {
-				menu.Gnomes.Synced(true)
+			rpc.EchoWallet("RefService")
+			gnomon.IndexContains()
+			if gnomon.GetLastHeight() >= gnomon.GetChainHeight()-3 && gnomon.HasIndex(1) {
+				gnomon.Synced(true)
 			} else {
-				menu.Gnomes.Synced(false)
-				if !menu.Gnomes.Start && menu.Gnomes.IsInitialized() {
-					diff := menu.Gnomes.Indexer.ChainHeight - menu.Gnomes.Indexer.LastIndexedHeight
+				gnomon.Synced(false)
+				if !gnomon.IsStarting() && gnomon.IsInitialized() {
+					diff := gnomon.GetChainHeight() - gnomon.GetLastHeight()
 					if diff > 3 {
-						logger.Printf("[runRefService] Gnomon has %d blocks to go\n", diff)
+						logger.Printf("[RefService] Gnomon has %d blocks to go\n", diff)
 					}
 				}
 			}
@@ -221,14 +218,14 @@ func RunRefService() {
 	}()
 
 	// Wait for Gnomon to sync
-	for !menu.Gnomes.IsSynced() {
+	for !menu.IsClosing() && (!gnomon.IsSynced() || gnomon.IsStatus("fastsyncing")) {
 		time.Sleep(time.Second)
 	}
 
 	time.Sleep(time.Second)
 
 	// Start RefService
-	Duels = getIndex()
+	gnomes.GetStorage("DUELBUCKET", "DUELS", &Duels)
 	Service.Start()
 	refService()
 }
@@ -236,17 +233,17 @@ func RunRefService() {
 // Main RefService process
 func refService() {
 	if rpc.IsReady() {
-		logger.Println("[RefService] Initializing")
+		logger.Println("[refService] Initializing")
 		for i := 5; i > 0; i-- {
 			if !Service.IsRunning() {
 				break
 			}
-			logger.Println("[RefService] Starting in", i)
+			logger.Println("[refService] Starting in", i)
 			time.Sleep(time.Second)
 		}
 
 		if Service.IsRunning() {
-			logger.Println("[RefService] Starting")
+			logger.Println("[refService] Starting")
 		}
 
 		for Service.IsRunning() && rpc.IsReady() {
@@ -255,9 +252,10 @@ func refService() {
 			refGetAllDuels()
 			GetFinals()
 			processReady()
+			logger.Debugln("[refService] Joins:", len(Joins.All), Joins.All, "Ready:", len(Ready.All), Ready.All, "Finals:", len(Finals.All), Finals.All)
 
-			if !menu.Gnomes.IsClosing() {
-				storeIndex()
+			if !gnomon.IsClosing() {
+				gnomes.StoreBolt("DUELBUCKET", "DUELS", &Duels)
 			}
 
 			for i := 0; i < 10; i++ {
@@ -268,19 +266,19 @@ func refService() {
 			}
 		}
 		Service.SetProcessing(false)
-		logger.Println("[RefService] Shutting down")
+		logger.Println("[refService] Shutting down")
 
-		logger.Println("[RefService] Done")
+		logger.Println("[refService] Done")
 	}
 	Service.Stop()
 }
 
 // Gets joinable duels for RefService
 func refGetJoins() {
-	if menu.Gnomes.IsReady() {
-		_, initValue := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "init")
+	if gnomon.IsReady() {
+		_, initValue := gnomon.GetSCIDValuesByKey(DUELSCID, "init")
 		if initValue != nil {
-			if _, rounds := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "rds"); rounds != nil {
+			if _, rounds := gnomon.GetSCIDValuesByKey(DUELSCID, "rds"); rounds != nil {
 				Duels.Total = int(rounds[0])
 			}
 
@@ -291,14 +289,14 @@ func refGetJoins() {
 					break
 				}
 
-				if !rpc.Wallet.IsConnected() || !menu.Gnomes.IsReady() {
+				if !rpc.Wallet.IsConnected() || !gnomon.IsReady() {
 					break
 				}
 
 				e := Duels.SingleEntry(u)
 
 				n := strconv.Itoa(int(u))
-				_, init := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "init_"+n)
+				_, init := gnomon.GetSCIDValuesByKey(DUELSCID, "init_"+n)
 				if init == nil || init[0] == 0 {
 					Duels.Lock()
 					delete(Duels.Index, u)
@@ -312,13 +310,13 @@ func refGetJoins() {
 				if e.Num == "" {
 					logger.Debugln("[refGetJoins] Making")
 
-					_, buffer := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "stamp_"+n)
+					_, buffer := gnomon.GetSCIDValuesByKey(DUELSCID, "stamp_"+n)
 					if buffer == nil {
 						logger.Debugf("[refGetJoins] %s no start stamp\n", n)
 						buffer = append(buffer, 0)
 					}
 
-					address, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "own_a_"+n)
+					address, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "own_a_"+n)
 					if address == nil {
 						logger.Debugf("[refGetJoins] %s no address\n", n)
 						continue
@@ -329,14 +327,14 @@ func refGetJoins() {
 						continue
 					}
 
-					_, items := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "items_"+n)
+					_, items := gnomon.GetSCIDValuesByKey(DUELSCID, "items_"+n)
 					if items == nil {
 						logger.Debugf("[refGetJoins] %s no items\n", n)
 						continue
 					}
 
 					deathmatch := "No"
-					_, dm := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "dm_"+n)
+					_, dm := gnomon.GetSCIDValuesByKey(DUELSCID, "dm_"+n)
 					if dm == nil {
 						logger.Debugf("[refGetJoins] %s no dm\n", n)
 						continue
@@ -347,7 +345,7 @@ func refGetJoins() {
 					}
 
 					hardcore := "No"
-					_, rule := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "rule_"+n)
+					_, rule := gnomon.GetSCIDValuesByKey(DUELSCID, "rule_"+n)
 					if rule == nil {
 						logger.Debugf("[refGetJoins] %s no rule\n", n)
 						continue
@@ -357,25 +355,25 @@ func refGetJoins() {
 						hardcore = "Yes"
 					}
 
-					_, amt := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "amt_"+n)
+					_, amt := gnomon.GetSCIDValuesByKey(DUELSCID, "amt_"+n)
 					if amt == nil {
 						logger.Debugf("[refGetJoins] %s no amt\n", n)
 						continue
 					}
 
-					_, option := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "op_a_"+n)
+					_, option := gnomon.GetSCIDValuesByKey(DUELSCID, "op_a_"+n)
 					if option == nil {
 						logger.Debugf("[refGetJoins] %s no optA\n", n)
 						continue
 					}
 
-					charA, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "ch_a_"+n)
+					charA, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "ch_a_"+n)
 					if charA == nil {
 						logger.Debugf("[refGetJoins] %s no charA\n", n)
 						continue
 					}
 
-					token, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "tkn_"+n)
+					token, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "tkn_"+n)
 					if token == nil {
 						logger.Debugf("[refGetJoins] %s no token\n", n)
 						token = append(token, "")
@@ -383,7 +381,7 @@ func refGetJoins() {
 
 					var item1Str, item2Str string
 					if items[0] >= 1 {
-						item1, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "i1_a_"+n)
+						item1, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "i1_a_"+n)
 						if item1 == nil {
 							logger.Debugf("[refGetJoins] %s should be a item1\n", n)
 							continue
@@ -393,7 +391,7 @@ func refGetJoins() {
 					}
 
 					if items[0] == 2 {
-						item2, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "i2_a_"+n)
+						item2, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "i2_a_"+n)
 						if item2 == nil {
 							logger.Debugf("[refGetJoins] %s should be a item2\n", n)
 							continue
@@ -422,6 +420,15 @@ func refGetJoins() {
 							Value:   0,
 						},
 					}
+
+					if !e.validateCollection(false) {
+						logger.Warnln("[refGetJoins] Not a valid duelist, refunding")
+						retry := 0
+						tx := Refund(n)
+						time.Sleep(time.Second)
+						retry += rpc.ConfirmTxRetry(tx, "refService", 60)
+						continue
+					}
 					Duels.WriteEntry(u, e)
 					Joins.All = append(Joins.All, u)
 				} else if e.Opponent.Icon.Char == nil && !Joins.ExistsIndex(u) {
@@ -437,9 +444,9 @@ func refGetJoins() {
 
 // Gets all duels for RefService
 func refGetAllDuels() {
-	if menu.Gnomes.IsReady() {
+	if gnomon.IsReady() {
 		for u, v := range Duels.Index {
-			if !rpc.Wallet.IsConnected() || !menu.Gnomes.IsReady() {
+			if !rpc.Wallet.IsConnected() || !gnomon.IsReady() {
 				break
 			}
 
@@ -456,38 +463,38 @@ func refGetAllDuels() {
 			}
 
 			n := strconv.Itoa(int(u))
-			if _, init := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "init_"+n); init != nil {
-				address, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "own_b_"+n)
+			if _, init := gnomon.GetSCIDValuesByKey(DUELSCID, "init_"+n); init != nil {
+				address, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "own_b_"+n)
 				if address == nil {
 					logger.Debugf("[refGetAllDuels] %s no address B\n", n)
 					continue
 				}
 
-				_, ready_stamp := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "ready_"+n)
+				_, ready_stamp := gnomon.GetSCIDValuesByKey(DUELSCID, "ready_"+n)
 				if ready_stamp == nil {
 					logger.Debugf("[refGetAllDuels] %s no ready stamp\n", n)
 					ready_stamp = append(ready_stamp, 0)
 				}
 
-				char, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "ch_b_"+n)
+				char, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "ch_b_"+n)
 				if char == nil {
 					logger.Debugf("[refGetAllDuels] %s no charB\n", n)
 					continue
 				}
 
-				_, option := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "op_b_"+n)
+				_, option := gnomon.GetSCIDValuesByKey(DUELSCID, "op_b_"+n)
 				if option == nil {
 					logger.Debugf("[refGetAllDuels] %s no optB\n", n)
 					continue
 				}
 
-				_, valA := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "v_a_"+n)
+				_, valA := gnomon.GetSCIDValuesByKey(DUELSCID, "v_a_"+n)
 				if valA == nil {
 					logger.Debugf("[refGetAllDuels] %s no valA\n", n)
 					continue
 				}
 
-				_, valB := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "v_b_"+n)
+				_, valB := gnomon.GetSCIDValuesByKey(DUELSCID, "v_b_"+n)
 				if valB == nil {
 					logger.Debugf("[refGetAllDuels] %s no valB\n", n)
 					continue
@@ -495,7 +502,7 @@ func refGetAllDuels() {
 
 				var item1Str, item2Str string
 				if v.Items >= 1 && v.Opponent.Icon.Item1 == nil {
-					item1, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "i1_b_"+n)
+					item1, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "i1_b_"+n)
 					if item1 == nil {
 						logger.Debugf("[refGetAllDuels] %s should be a item1\n", n)
 						continue
@@ -505,7 +512,7 @@ func refGetAllDuels() {
 				}
 
 				if v.Items == 2 && v.Opponent.Icon.Item2 == nil {
-					item2, _ := menu.Gnomes.GetSCIDValuesByKey(DUELSCID, "i2_b_"+n)
+					item2, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "i2_b_"+n)
 					if item2 == nil {
 						logger.Debugf("[refGetAllDuels] %s should be a item2\n", n)
 						continue
@@ -539,18 +546,25 @@ func refGetAllDuels() {
 			}
 		}
 	}
-
-	logger.Debugln("[refGetAllDuels] Joins:", len(Joins.All), Joins.All, "Ready:", len(Ready.All), Ready.All, "Finals:", len(Finals.All), Finals.All)
 }
 
 // Process any Duels that are ready for Ref, will retry any failed ref() txs up to 4 times
 func processReady() {
-	if !menu.Gnomes.IsRunning() {
+	if !gnomon.IsRunning() {
 		return
 	}
 
 	for u, e := range Duels.Index {
 		if e.Ready > 0 && !e.Complete {
+			if !e.validateCollection(true) || !e.validateCollection(false) {
+				logger.Warnln("[processReady] Not a valid collection, refunding")
+				retry := 0
+				tx := Refund(strconv.FormatUint(u, 10))
+				time.Sleep(time.Second)
+				retry += rpc.ConfirmTxRetry(tx, "refService", 60)
+				continue
+			}
+
 			now := time.Now().Unix()
 			stamp := int64(e.Ready) + 60
 			// Will wait a minute after ready stamp before calling refDuel()
@@ -558,9 +572,9 @@ func processReady() {
 				logger.Printf("[processReady] Processing #%s   Death match (%s)   Hardcore (%s)\n", e.Num, e.DM, e.Rule)
 				retry := 0
 				for retry < 4 {
-					tx := Duels.Index[u].refDuel()
+					tx := e.refDuel()
 					time.Sleep(time.Second)
-					retry += rpc.ConfirmTxRetry(tx, "refService", 45)
+					retry += rpc.ConfirmTxRetry(tx, "refService", 60)
 				}
 			} else {
 				for time.Now().Unix() < stamp {
@@ -570,9 +584,9 @@ func processReady() {
 				logger.Printf("[processReady] Processing #%s   Death match (%s)   Hardcore (%s)\n", e.Num, e.DM, e.Rule)
 				retry := 0
 				for retry < 4 {
-					tx := Duels.Index[u].refDuel()
+					tx := e.refDuel()
 					time.Sleep(time.Second)
-					retry += rpc.ConfirmTxRetry(tx, "refService", 45)
+					retry += rpc.ConfirmTxRetry(tx, "refService", 60)
 				}
 			}
 		}
