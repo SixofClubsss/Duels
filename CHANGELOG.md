@@ -2,7 +2,7 @@
 
 This file lists the changes to Duels repo with each version.
 
-## 0.1.0 - In Progress
+## 0.1.0 - December 23 2023
 
 Duels v0.1.0 is a showdown style game built on DERO, essentially over or under determined on chain
 
