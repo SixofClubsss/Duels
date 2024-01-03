@@ -38,11 +38,11 @@ cloud.google.com/go/storage v1.8.0/go.mod h1:Wv1Oy7z6Yz3DshWRJFhqM/UCfaWIRTdp0RX
 cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9ullr3+Kg0=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 fyne.io/fyne/v2 v2.2.4/go.mod h1:MBoGuHzLLSXdQOWFAwWhIhYTEMp33zqtGCReSWhaQTA=
-fyne.io/fyne/v2 v2.4.1 h1:Es100N6HIhJGg8H2ZAS2j5H/YibfxecXHs2V4A4hbq8=
-fyne.io/fyne/v2 v2.4.1/go.mod h1:AWM1iPM2YfliduZ4u/kQzP9E6ARIWm0gg+57GpYzWro=
+fyne.io/fyne/v2 v2.4.4-0.20231224124904-a09bbd790b98 h1:dKAlO/UPFaSQhBSh2BL/d0eXZ8gHY6xjNm5nUc5y928=
+fyne.io/fyne/v2 v2.4.4-0.20231224124904-a09bbd790b98/go.mod h1:1h3BKxmQYRJlr2g+RGVxedzr6vLVQ/AJmFWcF9CJnoQ=
 fyne.io/systray v1.10.1-0.20220621085403-9a2652634e93/go.mod h1:oM2AQqGJ1AMo4nNqZFYU8xYygSBZkW2hmdJ7n4yjedE=
-fyne.io/systray v1.10.1-0.20230722100817-88df1e0ffa9a h1:6Xf9fP3/mt72NrqlQhJWhQGcNf6GoG9X96NTaXr+K6A=
-fyne.io/systray v1.10.1-0.20230722100817-88df1e0ffa9a/go.mod h1:oM2AQqGJ1AMo4nNqZFYU8xYygSBZkW2hmdJ7n4yjedE=
+fyne.io/systray v1.10.1-0.20231115130155-104f5ef7839e h1:Hvs+kW2VwCzNToF3FmnIAzmivNgrclwPgoUdVSrjkP8=
+fyne.io/systray v1.10.1-0.20231115130155-104f5ef7839e/go.mod h1:oM2AQqGJ1AMo4nNqZFYU8xYygSBZkW2hmdJ7n4yjedE=
 fyne.io/x/fyne v0.0.0-20230411205836-1ca0ead20763 h1:9NsbIwWyaUXIuNhBEBFFoozC2g/viZ/N9T6H020Br7E=
 fyne.io/x/fyne v0.0.0-20230411205836-1ca0ead20763/go.mod h1:tInTkLEiYNhEYq8s4UbnpINBg/W6mqU0ArbuuJszd3s=
 github.com/Andrew-M-C/go.jsonvalue v1.1.2-0.20211223013816-e873b56b4a84/go.mod h1:oTJGG91FhtsxvUFVwHSvr6zuaTcAuroj/ToxfT7Ox8U=
@@ -78,8 +78,8 @@ github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghf
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
-github.com/civilware/Gnomon v0.0.0-20231218151558-0ee387e75195 h1:qoaUXjJVtUddv/UYqfM11Tmh0gmBffagMoih8CjQW3E=
-github.com/civilware/Gnomon v0.0.0-20231218151558-0ee387e75195/go.mod h1:0Aw1IosHn2r4olpU3OWfUlXhZijFtFV9UeHkzytYfTQ=
+github.com/civilware/Gnomon v0.0.0-20240102201536-a5900d5a61da h1:O1F4BGBqwkmT3YTOQ9Jec1of2WWTpbb4fKf2yg8pd+4=
+github.com/civilware/Gnomon v0.0.0-20240102201536-a5900d5a61da/go.mod h1:gXebDRkPMLPJRYpvatyVWq04sNhtkPvCpvgXWYgSzcQ=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
@@ -90,8 +90,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.0/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsr
 github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creachadair/jrpc2 v0.43.0 h1:sgYSOoAWXZ5cx9pd2pYH8dkrjCNdDpFwhO4ucMeUz7U=
 github.com/creachadair/jrpc2 v0.43.0/go.mod h1:oOdNFoMQQpSirGcSujG10NYl05K/IYrIUUNbh+/Xcd8=
-github.com/dReam-dApps/dReams v0.10.2-0.20231223102408-bb16636e1a47 h1:yErBioh77EwRBk8rkKiMrgrkeR6B9nfbrDMZaA2swnI=
-github.com/dReam-dApps/dReams v0.10.2-0.20231223102408-bb16636e1a47/go.mod h1:itlsS0j0lKR7cAvG/poXBwNCdnxS/iwnllX0iyebUI4=
+github.com/dReam-dApps/dReams v0.11.1-0.20240103072854-974a28cc7e46 h1:k3eauSM0Y6ABdCGHHZBhBtUp2FHCYkvskCTI2sXN2VI=
+github.com/dReam-dApps/dReams v0.11.1-0.20240103072854-974a28cc7e46/go.mod h1:xCWtxcmipYPqY8VVJDAnR3tNmTgJcUUYfT/ljaJ4RJA=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
