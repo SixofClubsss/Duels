@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -221,8 +222,6 @@ func GetJoins() (update bool) {
 
 				updateSyncProgress(sync_prog)
 
-				e := Duels.SingleEntry(u)
-
 				n := strconv.Itoa(int(u))
 				_, init := gnomon.GetSCIDValuesByKey(DUELSCID, "init_"+n)
 				if init == nil || init[0] == 0 {
@@ -235,12 +234,13 @@ func GetJoins() (update bool) {
 					continue
 				}
 
+				e := Duels.SingleEntry(u)
 				if e.Num == "" {
 					logger.Debugln("[GetJoins] Making")
 
 					_, buffer := gnomon.GetSCIDValuesByKey(DUELSCID, "stamp_"+n)
 					if buffer == nil {
-						logger.Debugf("[GetAllDuels] %s no start stamp\n", n)
+						logger.Debugf("[GetJoins] %s no start stamp\n", n)
 						buffer = append(buffer, 0)
 					}
 
@@ -526,6 +526,9 @@ func GetAllDuels() (update bool) {
 // Gets final duel results
 func GetFinals() (update bool) {
 	if gnomon.IsReady() {
+		heights := make([]int64, 0, len(Duels.Index))
+		heightEntries := make(map[int64][]uint64)
+
 		for u, v := range Duels.Index {
 			if !rpc.Wallet.IsConnected() || !gnomon.IsReady() {
 				break
@@ -543,7 +546,6 @@ func GetFinals() (update bool) {
 						if v.Odds <= 950 {
 							v.Complete = true
 							v.Height = rpc.GetDaemonTx(winner[1]).Block_Height
-							Finals.All = append(Finals.All, u)
 							if v.DM == "Yes" {
 								if v.Odds > 475 {
 									v.Duelist.Died = true
@@ -561,14 +563,37 @@ func GetFinals() (update bool) {
 					}
 					logger.Debugf("[GetFinals] %s invalid winner string\n", n)
 				}
-			} else if v.Complete && !Finals.ExistsIndex(u) {
-				Finals.All = append(Finals.All, u)
+			} else {
+				// Sort finals by height
 				update = true
+				var have bool
+				for _, k := range heights {
+					if k == v.Height {
+						have = true
+						break
+					}
+				}
+
+				heightEntries[v.Height] = append(heightEntries[v.Height], u)
+				if !have {
+					heights = append(heights, v.Height)
+				}
 			}
 		}
-	}
 
-	Finals.SortIndex(true)
+		sort.Slice(heights, func(i, j int) bool { return heights[i] > heights[j] })
+
+		var finals []uint64
+		for _, k := range heights {
+			if k != 0 {
+				finals = append(finals, heightEntries[k]...)
+			}
+		}
+
+		Duels.Lock()
+		Finals.All = finals
+		Duels.Unlock()
+	}
 
 	return
 }
