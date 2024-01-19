@@ -2,7 +2,7 @@
 
 This file lists the changes to Duels repo with each version.
 
-## 0.1.1 - In Progress
+## 0.1.1 - January 19 2024
 
 ### Changed
 * Go 1.21.5
