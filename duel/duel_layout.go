@@ -928,9 +928,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		tx := Graveyard.Index[selected_grave].Revive()
 		go func() {
 			go menu.ShowMessageDialog("Revive", fmt.Sprintf("TX: %s\n\nAuto claim tx will be sent once revive is confirmed", tx), 3*time.Second, d.Window)
-			if rpc.ConfirmTx(tx, app_tag, 60) {
+			if rpc.ConfirmTx(tx, app_tag, 45) {
 				if claim := rpc.ClaimNFA(scid); claim != "" {
-					if rpc.ConfirmTx(claim, app_tag, 60) {
+					if rpc.ConfirmTx(claim, app_tag, 45) {
 						d.Notification(app_tag, fmt.Sprintf("Claimed: %s", scid))
 					}
 				}
@@ -998,7 +998,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		},
 		func() fyne.CanvasObject {
 			return container.NewBorder(
-				dwidget.NewCenterLabel(""),
+				container.NewCenter(widget.NewRichText()),
 				dwidget.NewCenterLabel(""),
 				nil,
 				nil,
@@ -1048,7 +1048,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 				header := Duels.Index[id].resultsHeaderString()
 
-				if Duels.Index[id].Complete && Duels.Index[id].Opponent.Char != "" && o.(*fyne.Container).Objects[1].(*widget.Label).Text != header {
+				if Duels.Index[id].Complete && Duels.Index[id].Opponent.Char != "" && o.(*fyne.Container).Objects[1].(*fyne.Container).Objects[0].(*widget.RichText).String() != header {
 					var arrow fyne.CanvasObject
 					if Duels.Index[id].Odds < 475 {
 						arrow = bundle.LeftArrow(fyne.NewSize(80, 80))
@@ -1059,7 +1059,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = arrow
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].endedIn())
 
-					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(header)
+					o.(*fyne.Container).Objects[1].(*fyne.Container).Objects[0].(*widget.RichText).ParseMarkdown(header)
 					o.(*fyne.Container).Objects[2].(*widget.Label).SetText(fmt.Sprintf("Winner: %s %s", chopAddr(Duels.Index[id].Winner), Leaders.getRecordByAddress(Duels.Index[id].Winner)))
 
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*widget.Label).SetText(Duels.Index[id].Duelist.findDuelResult())
