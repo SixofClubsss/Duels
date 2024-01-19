@@ -27,7 +27,7 @@ import (
 
 const app_tag = "Duels"
 
-var version = semver.MustParse("0.1.0-dev.3")
+var version = semver.MustParse("0.1.0-dev.4")
 var gnomon = gnomes.NewGnomes()
 
 // Check duel package version

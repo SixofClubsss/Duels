@@ -10,6 +10,7 @@ This file lists the changes to Duels repo with each version.
 * dReams 0.11.1
 * Sort finals by height
 * 90 sec TX confirm durations
+* Cleaned up `rpc` client var names
 
 
 ## 0.1.0 - December 23 2023
