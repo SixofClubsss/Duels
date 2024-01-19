@@ -928,9 +928,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		tx := Graveyard.Index[selected_grave].Revive()
 		go func() {
 			go menu.ShowMessageDialog("Revive", fmt.Sprintf("TX: %s\n\nAuto claim tx will be sent once revive is confirmed", tx), 3*time.Second, d.Window)
-			if rpc.ConfirmTx(tx, app_tag, 60) {
+			if rpc.ConfirmTx(tx, app_tag, 45) {
 				if claim := rpc.ClaimNFA(scid); claim != "" {
-					if rpc.ConfirmTx(claim, app_tag, 60) {
+					if rpc.ConfirmTx(claim, app_tag, 45) {
 						d.Notification(app_tag, fmt.Sprintf("Claimed: %s", scid))
 					}
 				}
