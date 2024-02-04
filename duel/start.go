@@ -27,7 +27,7 @@ import (
 
 const app_tag = "Duels"
 
-var version = semver.MustParse("0.1.1")
+var version = semver.MustParse("0.1.1-dev.0")
 var gnomon = gnomes.NewGnomes()
 
 // Check duel package version
@@ -181,6 +181,7 @@ func StartApp() {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Duels", LayoutAllItems(menu.Assets.SCIDs, &d)),
 		container.NewTabItem("Assets", menu.PlaceAssets(app_tag, profile(&d), nil, bundle.ResourceMarketIconPng, &d)),
+		container.NewTabItem("Market", menu.PlaceMarket(&d)),
 		container.NewTabItem("Log", rpc.SessionLog(app_tag, version)))
 
 	tabs.SetTabLocation(container.TabLocationBottom)
@@ -247,22 +248,7 @@ func checkNFAOwner(scid string, all bool) {
 					add.SCID = scid
 					add.Type = menu.AssetType(collection[0], "typeHdr")
 
-					if collection[0] == "Dero Desperados" {
-						if all {
-							menu.Assets.Add(add, icon[0])
-						}
-						AddItemsToInventory(scid, header[0], owner[0], collection[0])
-					} else if collection[0] == "Desperado Guns" {
-						if all {
-							menu.Assets.Add(add, icon[0])
-						}
-						AddItemsToInventory(scid, header[0], owner[0], collection[0])
-					} else if collection[0] == "High Strangeness" {
-						if all {
-							menu.Assets.Add(add, icon[0])
-						}
-						AddItemsToInventory(scid, header[0], owner[0], collection[0])
-					} else if collection[0] == "Death By Cupcake" {
+					if isValidCharacter(collection[0]) || isValidItem(collection[0]) {
 						if all {
 							menu.Assets.Add(add, icon[0])
 						}

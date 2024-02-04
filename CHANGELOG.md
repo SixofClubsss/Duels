@@ -2,9 +2,19 @@
 
 This file lists the changes to Duels repo with each version.
 
+## 0.1.x - In Progress
+
+### Added
+
+* dSkullz collection
+* isValidCharacter() and isValidItem()
+* dReams market to cmd
+
+
 ## 0.1.1 - January 19 2024
 
 ### Changed
+
 * Go 1.21.5
 * Fyne 2.4.3
 * dReams 0.11.1

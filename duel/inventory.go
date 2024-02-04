@@ -240,6 +240,9 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 			case "Death By Cupcake":
 				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, rank), owner)
 				go Inventory.AddCharToInventory(header)
+			case "dSkullz":
+				Inventory.Character.Add(fmt.Sprintf("%s {R%d}", header, rank), owner)
+				go Inventory.AddCharToInventory(header)
 			}
 		}
 	}

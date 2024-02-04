@@ -108,7 +108,7 @@ func DreamsMenuIntro() (entries map[string][]string) {
 			"Game Modes",
 			"How to play"},
 
-		"Collections": {"Dero Desperados", "Desperados Guns", "High Strangeness", "Death By Cupcake", "More to come..."},
+		"Collections": {"Dero Desperados", "Desperados Guns", "High Strangeness", "Death By Cupcake", "dSkullz", "More to come..."},
 
 		"Game Modes": {"Death match", "Hardcore"},
 
@@ -608,11 +608,32 @@ func (duel entry) assetName() (asset_name string) {
 	return
 }
 
+// Is character collection a valid duel asset
+func isValidCharacter(coll string) bool {
+	characters := []string{"Dero Desperados", "Death By Cupcake", "High Strangeness", "dSkullz"}
+	for _, c := range characters {
+		if coll == c {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Is item collection a valid duel asset
+func isValidItem(coll string) bool {
+	items := []string{"Desperado Guns"}
+	for _, c := range items {
+		if coll == c {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Check all assets used for duel are valid
 func (duel entry) validateCollection(opponent bool) bool {
-	characters := []string{"Dero Desperados", "Death By Cupcake", "High Strangeness"}
-	items := []string{"Desperado Guns"}
-
 	var validate playerInfo
 	if opponent {
 		validate = duel.Opponent
@@ -623,60 +644,48 @@ func (duel entry) validateCollection(opponent bool) bool {
 	switch duel.Items {
 	case 0:
 		if coll, _ := gnomon.GetSCIDValuesByKey(validate.Char, "collection"); coll != nil {
-			for _, c := range characters {
-				if coll[0] == c {
-					return true
-				}
+			if isValidCharacter(coll[0]) {
+				return true
 			}
 		}
 	case 1:
 		var validChar bool
 		if coll, _ := gnomon.GetSCIDValuesByKey(validate.Char, "collection"); coll != nil {
-			for _, c := range characters {
-				if coll[0] == c {
-					validChar = true
-					break
-				}
+			if isValidCharacter(coll[0]) {
+				validChar = true
+				break
 			}
 		}
 
 		if validChar {
 			if item1, _ := gnomon.GetSCIDValuesByKey(validate.Item1, "collection"); item1 != nil {
-				for _, c := range items {
-					if item1[0] == c {
-						return true
-					}
+				if isValidItem(item1[0]) {
+					return true
 				}
 			}
 		}
 	case 2:
 		var validChar bool
 		if coll, _ := gnomon.GetSCIDValuesByKey(validate.Char, "collection"); coll != nil {
-			for _, c := range characters {
-				if coll[0] == c {
-					validChar = true
-					break
-				}
+			if isValidCharacter(coll[0]) {
+				validChar = true
+				break
 			}
 		}
 
 		if validChar {
 			var validItem bool
 			if item1, _ := gnomon.GetSCIDValuesByKey(validate.Item1, "collection"); item1 != nil {
-				for _, c := range items {
-					if item1[0] == c {
-						validItem = true
-						break
-					}
+				if isValidItem(item1[0]) {
+					validItem = true
+					break
 				}
 			}
 
 			if validItem {
 				if item2, _ := gnomon.GetSCIDValuesByKey(validate.Item2, "collection"); item2 != nil {
-					for _, c := range items {
-						if item2[0] == c {
-							return true
-						}
+					if isValidItem(item2[0]) {
+						return true
 					}
 				}
 			}
