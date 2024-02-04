@@ -653,7 +653,6 @@ func (duel entry) validateCollection(opponent bool) bool {
 		if coll, _ := gnomon.GetSCIDValuesByKey(validate.Char, "collection"); coll != nil {
 			if isValidCharacter(coll[0]) {
 				validChar = true
-				break
 			}
 		}
 
@@ -669,7 +668,6 @@ func (duel entry) validateCollection(opponent bool) bool {
 		if coll, _ := gnomon.GetSCIDValuesByKey(validate.Char, "collection"); coll != nil {
 			if isValidCharacter(coll[0]) {
 				validChar = true
-				break
 			}
 		}
 
@@ -678,7 +676,6 @@ func (duel entry) validateCollection(opponent bool) bool {
 			if item1, _ := gnomon.GetSCIDValuesByKey(validate.Item1, "collection"); item1 != nil {
 				if isValidItem(item1[0]) {
 					validItem = true
-					break
 				}
 			}
 
