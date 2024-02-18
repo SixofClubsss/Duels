@@ -254,7 +254,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 						total_rank_label.Text = ""
 						sync_label.SetText("Scanning Assets...")
 						max.Objects[0].(*container.Split).Leading.(*fyne.Container).Objects[0] = container.NewStack(sync_cont)
-						max.Objects[0].(*container.Split).Leading.Refresh()
 						Inventory.ClearAll()
 						character_cont.Objects[0].(*fyne.Container).Objects[0] = character
 						item1_cont.Objects[1].(*fyne.Container).Objects[0] = item1
@@ -263,7 +262,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 						sync_prog.Max = 1
 						sync_prog.SetValue(0)
 						max.Objects[0].(*container.Split).Leading.(*fyne.Container).Objects[0] = container.NewStack(equip_cont)
-						max.Objects[0].(*container.Split).Leading.Refresh()
 					}
 				}, d.Window).Show()
 			} else {
@@ -343,7 +341,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		starting_duel = false
 		accepting_duel = false
 		max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
-		max.Objects[0].(*container.Split).Trailing.Refresh()
 		Joins.List.UnselectAll()
 		Ready.List.UnselectAll()
 		Graveyard.List.UnselectAll()
@@ -684,7 +681,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				opponent_equip_box)
 
 			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = container.NewStack(bundle.NewAlpha180(), opponent_equip_cont)
-			max.Objects[0].(*container.Split).Trailing.Refresh()
 			Joins.List.UnselectAll()
 		}()
 	}
@@ -987,7 +983,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			container.NewCenter(icon))
 
 		max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = graveyard_cont
-		max.Objects[0].(*container.Split).Trailing.Refresh()
 		Graveyard.List.UnselectAll()
 	}
 
@@ -1372,7 +1367,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			go menu.ShowTxDialog("Start Duel", "Duels", tx, 3*time.Second, d.Window)
 
 			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
-			max.Objects[0].(*container.Split).Trailing.Refresh()
 			start_duel.Show()
 
 		case true:
@@ -1404,7 +1398,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 			accepting_duel = false
 			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
-			max.Objects[0].(*container.Split).Trailing.Refresh()
 			start_duel.Show()
 		}
 		resetToTabs()
@@ -1452,7 +1445,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			action_cont, nil,
 			nil,
 			container.NewBorder(layout.NewSpacer(), container.NewStack(start_label_spacer, container.NewVBox(dm_label, hc_label)), nil, nil, container.NewVBox(layout.NewSpacer(), container.NewCenter(widget.NewForm(start_duel_form...)), layout.NewSpacer())))
-		max.Objects[0].(*container.Split).Trailing.Refresh()
 		start_duel.Hide()
 		char_clear.Disable()
 		item1_clear.Disable()
@@ -1475,7 +1467,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			nil,
 			nil,
 			container.NewCenter(widget.NewForm(accept_form...)))
-		max.Objects[0].(*container.Split).Trailing.Refresh()
 	}
 
 	// Main duel process
@@ -1494,11 +1485,9 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					item2_cont.Objects[1].(*fyne.Container).Objects[0] = item2
 
 					max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
-					max.Objects[0].(*container.Split).Trailing.Refresh()
 
 					sync_label.SetText("Connect to Daemon and Wallet to sync")
 					max.Objects[0].(*container.Split).Leading.(*fyne.Container).Objects[0] = container.NewStack(sync_cont)
-					max.Objects[0].(*container.Split).Leading.Refresh()
 
 					Disconnected()
 					Inventory.Character.ClearAll()
@@ -1578,7 +1567,6 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 						sync_prog.Refresh()
 						loaded = true
 						max.Objects[0].(*container.Split).Leading.(*fyne.Container).Objects[0] = container.NewStack(equip_cont)
-						max.Objects[0].(*container.Split).Leading.Refresh()
 					}
 				}
 

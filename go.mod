@@ -5,9 +5,9 @@ go 1.21.5
 require (
 	fyne.io/fyne/v2 v2.4.4-0.20231230213034-537ba82a15dc
 	github.com/blang/semver/v4 v4.0.0
-	github.com/civilware/Gnomon v0.0.0-20240102201536-a5900d5a61da
-	github.com/dReam-dApps/dReams v0.11.2-0.20240205224855-fcdeafa1cb4d
-	github.com/deroproject/derohe v0.0.0-20230604143809-765b2db1f482
+	github.com/civilware/Gnomon v0.0.0-20240215215804-cfa19c264d97
+	github.com/dReam-dApps/dReams v0.11.2-0.20240218030015-c40852070588
+	github.com/deroproject/derohe v0.0.0-20240215152352-a5a0e6a68ada
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/sirupsen/logrus v1.9.3
 )
@@ -45,7 +45,7 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
 	github.com/klauspost/compress v1.15.13 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
 	github.com/klauspost/reedsolomon v1.11.8 // indirect
 	github.com/lesismal/llib v1.1.13 // indirect
 	github.com/lesismal/nbio v1.3.17 // indirect
@@ -74,13 +74,13 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
-	golang.org/x/crypto v0.14.0 // indirect
+	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/image v0.14.0 // indirect
 	golang.org/x/mobile v0.0.0-20231108233038-35478a0c49da // indirect
-	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
-	golang.org/x/term v0.13.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

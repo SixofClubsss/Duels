@@ -1056,12 +1056,21 @@ func (duel playerInfo) IconImage(size, img int) fyne.CanvasObject {
 	}
 }
 
-// Find rank of character
+// Returns name of character
+func (p playerInfo) GetCharacterName() (name string) {
+	if str, _ := gnomon.GetSCIDValuesByKey(p.Char, "nameHdr"); str != nil {
+		name = str[0]
+	}
+
+	return
+}
+
+// Returns rank of character
 func (p playerInfo) getCharacterRank() uint64 {
 	return validateAssetRank(p.Char)
 }
 
-// Find rank of item 1 or 2
+// Get rank of item 1 or 2
 //   - i of 0 return item1 and 1 returns item2
 func (p playerInfo) getItemRank(i int) uint64 {
 	if i == 1 {
