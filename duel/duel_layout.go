@@ -36,12 +36,12 @@ var search searching
 var sync_prog *widget.ProgressBar
 
 // Layout all duel items
-func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObject {
+func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObject {
 	selected_join := uint64(0)
 	selected_duel := uint64(0)
 	selected_grave := uint64(0)
 	var resetToTabs, updateDMLabel func()
-	var starting_duel, accepting_duel, loaded bool
+	var starting_duel, accepting_duel, loaded, reload bool
 	var max *fyne.Container
 	var tabs *container.AppTabs
 
@@ -220,7 +220,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				container.NewStack(item2_cont),
 				equip_spacer)))
 
-	sync_label := dwidget.NewCenterLabel("Connect to Daemon and Wallet to sync")
+	sync_label := dwidget.NewCenterLabel("Connect to Daemon and Wallet to sync duels index")
 
 	sync_prog = widget.NewProgressBar()
 	sync_prog.Min = 0
@@ -287,7 +287,11 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 			if gnomon.DBStorageType() == "boltdb" {
 				dialog.NewConfirm("Clear Image Cache", "Would you like to clear your stored image cache?", func(b bool) {
 					if b {
+						sync_label.SetText("Deleting local duels storage and resyncing...")
+						max.Objects[0].(*container.Split).Leading.(*fyne.Container).Objects[0] = container.NewStack(sync_cont)
 						gnomes.DeleteStorage("DUELBUCKET", "DUELS")
+						reload = true
+						loaded = false
 					}
 				}, d.Window).Show()
 			} else {
@@ -924,10 +928,10 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 		tx := Graveyard.Index[selected_grave].Revive()
 		go func() {
 			go menu.ShowMessageDialog("Revive", fmt.Sprintf("TX: %s\n\nAuto claim tx will be sent once revive is confirmed", tx), 3*time.Second, d.Window)
-			if rpc.ConfirmTx(tx, app_tag, 45) {
+			if rpc.ConfirmTx(tx, appName, 45) {
 				if claim := rpc.ClaimNFA(scid); claim != "" {
-					if rpc.ConfirmTx(claim, app_tag, 45) {
-						d.Notification(app_tag, fmt.Sprintf("Claimed: %s", scid))
+					if rpc.ConfirmTx(claim, appName, 45) {
+						d.Notification(appName, fmt.Sprintf("Claimed: %s", scid))
 					}
 				}
 			}
@@ -1187,12 +1191,15 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	}
 
 	// Initialize dReams container stack
-	D.LeftLabel = widget.NewLabel("")
-	D.RightLabel = widget.NewLabel("")
-	D.LeftLabel.SetText("Total Duels Held: ()      Ready Duels: ()")
-	D.RightLabel.SetText("dReams Balance: " + rpc.DisplayBalance("dReams") + "      Dero Balance: " + rpc.DisplayBalance("Dero") + "      Height: " + rpc.Wallet.Display.Height)
+	D.Left.Label = widget.NewLabel("")
+	D.Left.SetUpdate(func() string {
+		return fmt.Sprintf("Total Duels Held: (%d)      Ready Duels: (%d)", Duels.Total, len(Ready.All))
+	})
 
-	top_label := container.NewHBox(D.LeftLabel, layout.NewSpacer(), D.RightLabel)
+	D.Right.Label = widget.NewLabel("")
+	D.Right.SetUpdate(dreams.SetBalanceLabelText)
+
+	top_label := container.NewHBox(D.Left.Label, layout.NewSpacer(), D.Right.Label)
 
 	max = container.NewStack(container.NewHSplit(container.NewStack(sync_cont), container.NewStack(bundle.NewAlpha120(), tabs)))
 	max.Objects[0].(*container.Split).SetOffset(0)
@@ -1201,7 +1208,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	duel_curr := widget.NewSelect([]string{"DERO", "dReams"}, nil)
 	duel_curr.PlaceHolder = "Currency:"
 
-	duel_amt := dwidget.NewDeroEntry("", 0.1, 5)
+	duel_amt := dwidget.NewAmountEntry("", 0.1, 5)
 	duel_amt.SetPlaceHolder("DERO:")
 
 	// Death match options
@@ -1353,7 +1360,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 			aim := uint64(opt_select.SelectedIndex())
 
-			if duel_curr.Selected != "DERO" && rpc.SCIDs[duel_curr.Selected] == "" {
+			if duel_curr.Selected != "DERO" && rpc.GetAssetSCIDByName(duel_curr.Selected) == "" {
 				info := "Choose a currency"
 				if duel_curr.Selected != "" {
 					info = fmt.Sprintf("Error getting %s SCID", duel_curr.Selected)
@@ -1363,7 +1370,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 				return
 			}
 
-			tx := StartDuel(rpc.ToAtomic(f, 5), items, rule, dm, aim, char_str, item1_str, item2_str, rpc.SCIDs[duel_curr.Selected])
+			tx := StartDuel(rpc.ToAtomic(f, 5), items, rule, dm, aim, char_str, item1_str, item2_str, rpc.GetAssetSCIDByName(duel_curr.Selected))
 			go menu.ShowTxDialog("Start Duel", "Duels", tx, 3*time.Second, d.Window)
 
 			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
@@ -1472,7 +1479,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 	// Main duel process
 	go func() {
 		time.Sleep(3 * time.Second)
-		var offset int
+		var saved int64
 		var synced bool
 		for {
 			select {
@@ -1486,7 +1493,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 
 					max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = tabs
 
-					sync_label.SetText("Connect to Daemon and Wallet to sync")
+					sync_label.SetText("Connect to Daemon and Wallet to sync duels index")
 					max.Objects[0].(*container.Split).Leading.(*fyne.Container).Objects[0] = container.NewStack(sync_cont)
 
 					Disconnected()
@@ -1505,23 +1512,36 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					gnomes.GetStorage("DUELBUCKET", "DUELS", &Duels)
 					synced = true
 				} else {
-					sync_label.SetText("Waiting for Gnomon to sync")
+					if saved >= gnomon.GetLastHeight() && !reload {
+						d.WorkDone()
+						continue
+					}
+
+					saved = gnomon.GetLastHeight()
+					if reload {
+						sync_label.SetText("Creating duels index, this may take a few minutes to complete")
+						reload = false
+						Joins.All = []uint64{}
+						Ready.All = []uint64{}
+						Finals.All = []uint64{}
+						Duels.Index = make(map[uint64]entry)
+						Graveyard.Index = make(map[uint64]grave)
+						Graveyard.All = []uint64{}
+					}
 				}
 
 				if synced {
-					if !loaded {
-						if r, ok := rpc.GetStringKey(DUELSCID, "rds", rpc.Daemon.Rpc).(float64); ok {
-							sync_prog.Max = r + 1
-						} else {
-							sync_prog.Max = 50
-						}
+					num := getInitNumbers()
+					if !loaded && !reload {
+						sync_prog.SetValue(0)
+						sync_prog.Max = float64(len(num))
 					}
 
-					if GetJoins() {
+					if GetJoins(num) {
 						Joins.List.Refresh()
 					}
 
-					if !loaded {
+					if !loaded && !reload {
 						sync_prog.SetValue(0)
 						sync_prog.Max = float64(len(Duels.Index))
 						sync_label.SetText("Matching opponents, this may take a few minutes to complete")
@@ -1531,7 +1551,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 						Ready.List.Refresh()
 					}
 
-					if !loaded {
+					if !loaded && !reload {
 						sync_prog.SetValue(0)
 						sync_prog.Max = float64(len(Duels.Index)) + 1
 						sync_label.SetText("Getting results, this may take a few minutes to complete")
@@ -1541,7 +1561,7 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 						Finals.List.Refresh()
 					}
 
-					if !loaded {
+					if !loaded && !reload {
 						sync_prog.SetValue(0)
 						sync_label.SetText("Getting graves, this may take a few minutes to complete")
 						if gnomon.IsReady() {
@@ -1550,17 +1570,17 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 						} else {
 							sync_prog.Max = float64(400)
 						}
-
 					}
 
 					GetGraveyard()
-					if offset%10 == 0 {
+					if saved < gnomon.GetLastHeight() {
+						saved = gnomon.GetLastHeight()
 						if !gnomon.IsClosing() {
 							gnomes.StoreBolt("DUELBUCKET", "DUELS", &Duels)
 						}
 					}
 
-					if !loaded {
+					if !loaded && !reload {
 						sync_label.SetText("")
 						sync_prog.Max = 1
 						sync_prog.SetValue(0)
@@ -1570,13 +1590,8 @@ func LayoutAllItems(asset_map map[string]string, d *dreams.AppObject) fyne.Canva
 					}
 				}
 
-				D.LeftLabel.SetText(fmt.Sprintf("Total Duels Held: (%d)      Ready Duels: (%d)", Duels.Total, len(Ready.All)))
-				D.RightLabel.SetText("dReams Balance: " + rpc.DisplayBalance("dReams") + "      Dero Balance: " + rpc.DisplayBalance("Dero") + "      Height: " + rpc.Wallet.Display.Height)
-
-				offset++
-				if offset > 10 {
-					offset = 0
-				}
+				D.Left.UpdateText()
+				D.Right.UpdateText()
 
 				d.WorkDone()
 			case <-d.CloseDapp():
@@ -1600,7 +1615,7 @@ func updateSyncProgress(bar *widget.ProgressBar) {
 
 // Search bar widget for duels
 func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d *dreams.AppObject) (max *fyne.Container) {
-	amt_entry := dwidget.NewDeroEntry("", 0.1, 5)
+	amt_entry := dwidget.NewAmountEntry("", 0.1, 5)
 	amt_entry.SetPlaceHolder("Amount:")
 
 	yn_select := widget.NewSelect([]string{"Yes", "No"}, nil)
@@ -1741,7 +1756,7 @@ func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d
 
 // Search bar widget for graveyard
 func (s *searches) searchGraves(d *dreams.AppObject) (max *fyne.Container) {
-	amt_entry := dwidget.NewDeroEntry("", 0.1, 5)
+	amt_entry := dwidget.NewAmountEntry("", 0.1, 5)
 	amt_entry.SetPlaceHolder("Amount:")
 	amt_entry.AllowFloat = true
 

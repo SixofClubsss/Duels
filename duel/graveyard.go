@@ -32,7 +32,7 @@ var Graveyard graveMap
 // Get asset name of grave
 func (grave grave) assetName() (asset_name string) {
 	asset_name = "DERO"
-	if name := rpc.GetAssetSCIDName(grave.Token); name != "" {
+	if name := rpc.GetAssetNameBySCID(grave.Token); name != "" {
 		asset_name = name
 	}
 

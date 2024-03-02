@@ -203,7 +203,7 @@ func RunRefService() {
 		logger.Println("[RefService] Starting when Gnomon is synced")
 		for !menu.IsClosing() && gnomon.IsRunning() && rpc.IsReady() {
 			rpc.Ping()
-			rpc.EchoWallet("RefService")
+			rpc.Wallet.Echo()
 			gnomon.IndexContains()
 			if gnomon.GetLastHeight() >= gnomon.GetChainHeight()-3 && gnomon.HasIndex(1) {
 				gnomon.Synced(true)
@@ -321,7 +321,7 @@ func refGetJoins() {
 
 					address, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "own_a_"+n)
 					if address == nil {
-						logger.Debugf("[refGetJoins] %s no address\n", n)
+						logger.Debugf("[refGetJoins] %s no duelist address\n", n)
 						continue
 					}
 
@@ -468,7 +468,7 @@ func refGetAllDuels() {
 			if _, init := gnomon.GetSCIDValuesByKey(DUELSCID, "init_"+n); init != nil {
 				address, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "own_b_"+n)
 				if address == nil {
-					logger.Debugf("[refGetAllDuels] %s no address B\n", n)
+					logger.Debugf("[refGetAllDuels] %s no opponent address\n", n)
 					continue
 				}
 
