@@ -809,6 +809,11 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 		if checkOwnerAndRefs() {
 			var info dialog.Dialog
 			ref_button := widget.NewButton("Ref Duel", func() {
+				if Duels.Index[selected_duel].checkDuelAddresses() {
+					dialog.NewInformation("Ref Duel", "Can't ref a duel you are in", d.Window).Show()
+					return
+				}
+
 				dialog.NewConfirm("Ref Duel", fmt.Sprintf("Would you like to Ref this Duel?\n\n%s", Duels.Index[selected_duel].dryRefDuel()), func(b bool) {
 					if b {
 						info.Hide()
