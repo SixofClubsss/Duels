@@ -554,12 +554,33 @@ func GetFinals() (update bool) {
 			if !v.Complete {
 				if final, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "final_"+n); final != nil {
 					if winner := strings.Split(final[0], "_"); len(winner) >= 3 {
+						Ready.RemoveIndex(u)
+
+						// Get height when hardcore duel results were finalized
+						if v.Rule == "Yes" && v.Height == 0 {
+							if height := rpc.GetDaemonTx(winner[1]); height != nil {
+								v.Height = height.Block_Height
+								Duels.WriteEntry(u, v)
+							}
+
+							continue
+						}
+
+						// Delay showing hardcore results
+						if gnomon.GetLastHeight() <= v.Height+1 {
+							continue
+						}
+
 						v.Winner = rpc.DeroAddressFromKey(winner[0])
 						v.Odds = rpc.Uint64Type(winner[2])
-						Ready.RemoveIndex(u)
 						if v.Odds <= 950 {
 							v.Complete = true
-							v.Height = rpc.GetDaemonTx(winner[1]).Block_Height
+							if v.Height == 0 {
+								if height := rpc.GetDaemonTx(winner[1]); height != nil {
+									v.Height = height.Block_Height
+								}
+							}
+
 							if v.DM == "Yes" {
 								if v.Odds > 475 {
 									v.Duelist.Died = true
