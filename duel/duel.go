@@ -2,8 +2,6 @@ package duel
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 	"sort"
 	"strconv"
 	"strings"
@@ -15,6 +13,7 @@ import (
 
 	//xwidget "fyne.io/x/fyne/widget"
 	"github.com/civilware/Gnomon/structures"
+	dreams "github.com/dReam-dApps/dReams"
 	"github.com/dReam-dApps/dReams/dwidget"
 	"github.com/dReam-dApps/dReams/gnomes"
 	"github.com/dReam-dApps/dReams/rpc"
@@ -1224,19 +1223,7 @@ func checkOwnerAndRefs() bool {
 
 // Download NFA SCID icon image file as []byte
 func downloadBytes(scid string) ([]byte, error) {
-	client := http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Get(findCollectionURL(scid))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	image, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return image, nil
+	return dreams.DownloadBytes(findCollectionURL(scid))
 }
 
 // Find which images should be used for a collection, icon or main file
