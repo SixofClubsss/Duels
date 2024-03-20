@@ -50,10 +50,11 @@ func StartApp() {
 	d := dreams.NewFyneApp(
 		appID,
 		appName,
+		"DERO Asset Duels",
 		bundle.DeroTheme(config.Skin),
 		ResourceDuelIconPng,
 		menu.DefaultBackgroundResource(),
-		rpc.NewXSWDApplicationData(appName, "DERO Asset Duels", appID, true))
+		true)
 
 	// Initialize closing func and channel
 	done := make(chan struct{})
