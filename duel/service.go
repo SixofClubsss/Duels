@@ -129,7 +129,7 @@ func RunRefService() {
 
 	// Set default rpc params
 	rpc.Daemon.Rpc = "127.0.0.1:10102"
-	rpc.Wallet.Rpc = "127.0.0.1:10103"
+	rpc.Wallet.RPC.Port = "127.0.0.1:10103"
 
 	if arguments["--daemon"] != nil {
 		if arguments["--daemon"].(string) != "" {
@@ -139,13 +139,13 @@ func RunRefService() {
 
 	if arguments["--wallet"] != nil {
 		if arguments["--wallet"].(string) != "" {
-			rpc.Wallet.Rpc = arguments["--wallet"].(string)
+			rpc.Wallet.RPC.Port = arguments["--wallet"].(string)
 		}
 	}
 
 	if arguments["--login"] != nil {
 		if arguments["--login"].(string) != "" {
-			rpc.Wallet.UserPass = arguments["--login"].(string)
+			rpc.Wallet.RPC.Auth = arguments["--login"].(string)
 		}
 	}
 
@@ -154,6 +154,9 @@ func RunRefService() {
 	gnomon.SetDBStorageType("boltdb")
 
 	logger.Println("[RefService]", version, runtime.GOOS, runtime.GOARCH)
+
+	// Initialize wallet RPC server connection
+	rpc.Wallet.RPC.Init()
 
 	// Check for daemon connection
 	rpc.Ping()
@@ -164,7 +167,7 @@ func RunRefService() {
 	// Check for wallet connection
 	rpc.GetAddress("RefService")
 	if !rpc.Wallet.IsConnected() {
-		logger.Fatalf("[RefService] Wallet %s not connected\n", rpc.Wallet.Rpc)
+		logger.Fatalf("[RefService] Wallet %s not connected\n", rpc.Wallet.RPC.Port)
 	}
 
 	// Handle ctrl-c close
@@ -200,7 +203,7 @@ func RunRefService() {
 		logger.Println("[RefService] Starting when Gnomon is synced")
 		for !menu.IsClosing() && gnomon.IsRunning() && rpc.IsReady() {
 			rpc.Ping()
-			rpc.EchoWallet("RefService")
+			rpc.Wallet.Echo()
 			gnomon.IndexContains()
 			if gnomon.GetLastHeight() >= gnomon.GetChainHeight()-3 && gnomon.HasIndex(1) {
 				gnomon.Synced(true)
@@ -318,7 +321,7 @@ func refGetJoins() {
 
 					address, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "own_a_"+n)
 					if address == nil {
-						logger.Debugf("[refGetJoins] %s no address\n", n)
+						logger.Debugf("[refGetJoins] %s no duelist address\n", n)
 						continue
 					}
 
@@ -465,7 +468,7 @@ func refGetAllDuels() {
 			if _, init := gnomon.GetSCIDValuesByKey(DUELSCID, "init_"+n); init != nil {
 				address, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "own_b_"+n)
 				if address == nil {
-					logger.Debugf("[refGetAllDuels] %s no address B\n", n)
+					logger.Debugf("[refGetAllDuels] %s no opponent address\n", n)
 					continue
 				}
 

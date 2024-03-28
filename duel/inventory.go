@@ -202,7 +202,7 @@ func (inv *inventory) findRank() (rank uint64) {
 // Add duel assets to inventory, adding rank to name for display string
 // Implemented characters or items without a rank are hard coded rank 1
 func AddItemsToInventory(scid, header, owner, collection string) {
-	if rpc.TokenBalance(scid) != 1 {
+	if rpc.GetAssetBalance(scid) != 1 {
 		logger.Debugf("[AddItemsToInventory] %s token not in wallet\n", scid)
 		return
 	}

@@ -14,9 +14,6 @@ const DUELSCID = "d455bd7567453a1c11177b7a3bc58ed36aa8ead4503587bb8d86c7f308a91b
 
 // Start a duel
 func StartDuel(amt, items, rule, dm, op uint64, char, item1, item2, token string) (tx string) {
-	client, ctx, cancel := rpc.SetWalletClient(rpc.Wallet.Rpc, rpc.Wallet.UserPass)
-	defer cancel()
-
 	args := dero.Arguments{
 		dero.Argument{Name: "entrypoint", DataType: "S", Value: "Start"},
 		dero.Argument{Name: "amt", DataType: "U", Value: amt},
@@ -82,7 +79,7 @@ func StartDuel(amt, items, rule, dm, op uint64, char, item1, item2, token string
 		Fees:      fee,
 	}
 
-	if err := client.CallFor(ctx, &txid, "transfer", params); err != nil {
+	if err := rpc.Wallet.CallFor(&txid, "transfer", params); err != nil {
 		rpc.PrintError("[Duels] Start: %s", err)
 		return
 	}
@@ -94,9 +91,6 @@ func StartDuel(amt, items, rule, dm, op uint64, char, item1, item2, token string
 
 // Accept joinable duel
 func (duel entry) AcceptDuel(items, op uint64, char, item1, item2 string) (tx string) {
-	client, ctx, cancel := rpc.SetWalletClient(rpc.Wallet.Rpc, rpc.Wallet.UserPass)
-	defer cancel()
-
 	args := dero.Arguments{
 		dero.Argument{Name: "entrypoint", DataType: "S", Value: "Accept"},
 		dero.Argument{Name: "n", DataType: "S", Value: duel.Num},
@@ -157,7 +151,7 @@ func (duel entry) AcceptDuel(items, op uint64, char, item1, item2 string) (tx st
 		Fees:      fee,
 	}
 
-	if err := client.CallFor(ctx, &txid, "transfer", params); err != nil {
+	if err := rpc.Wallet.CallFor(&txid, "transfer", params); err != nil {
 		rpc.PrintError("[Duels] Accept: %s", err)
 		return
 	}
@@ -169,9 +163,6 @@ func (duel entry) AcceptDuel(items, op uint64, char, item1, item2 string) (tx st
 
 // Ref a duel, need to be owner or a ref on SC to call
 func (duel entry) ref(n, addr string, win rune, odds uint64) (tx string) {
-	client, ctx, cancel := rpc.SetWalletClient(rpc.Wallet.Rpc, rpc.Wallet.UserPass)
-	defer cancel()
-
 	args := dero.Arguments{
 		dero.Argument{Name: "entrypoint", DataType: "S", Value: "Ref"},
 		dero.Argument{Name: "n", DataType: "S", Value: n},
@@ -234,7 +225,7 @@ func (duel entry) ref(n, addr string, win rune, odds uint64) (tx string) {
 		Fees:      fee,
 	}
 
-	if err := client.CallFor(ctx, &txid, "transfer", params); err != nil {
+	if err := rpc.Wallet.CallFor(&txid, "transfer", params); err != nil {
 		rpc.PrintError("[Duels] Ref Duel: %s", err)
 		return
 	}
@@ -246,9 +237,6 @@ func (duel entry) ref(n, addr string, win rune, odds uint64) (tx string) {
 
 // Revive a character from graveyard
 func (grave grave) Revive() (tx string) {
-	client, ctx, cancel := rpc.SetWalletClient(rpc.Wallet.Rpc, rpc.Wallet.UserPass)
-	defer cancel()
-
 	args := dero.Arguments{
 		dero.Argument{Name: "entrypoint", DataType: "S", Value: "Revi"},
 		dero.Argument{Name: "n", DataType: "S", Value: grave.Num},
@@ -281,7 +269,7 @@ func (grave grave) Revive() (tx string) {
 		Fees:      fee,
 	}
 
-	if err := client.CallFor(ctx, &txid, "transfer", params); err != nil {
+	if err := rpc.Wallet.CallFor(&txid, "transfer", params); err != nil {
 		rpc.PrintError("[Duels] Revive: %s", err)
 		return
 	}
@@ -293,9 +281,6 @@ func (grave grave) Revive() (tx string) {
 
 // Refund a duel, used by owners, refs and players
 func Refund(n string) (tx string) {
-	client, ctx, cancel := rpc.SetWalletClient(rpc.Wallet.Rpc, rpc.Wallet.UserPass)
-	defer cancel()
-
 	args := dero.Arguments{
 		dero.Argument{Name: "entrypoint", DataType: "S", Value: "Refund"},
 		dero.Argument{Name: "n", DataType: "S", Value: n},
@@ -312,7 +297,7 @@ func Refund(n string) (tx string) {
 		Fees:      fee,
 	}
 
-	if err := client.CallFor(ctx, &txid, "transfer", params); err != nil {
+	if err := rpc.Wallet.CallFor(&txid, "transfer", params); err != nil {
 		rpc.PrintError("[Duels] Refund: %s", err)
 		return
 	}

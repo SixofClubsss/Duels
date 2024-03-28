@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -25,9 +24,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const app_tag = "Duels"
+const appName = "Duels"
+const appID = "dreamdapps.io.duels"
 
-var version = semver.MustParse("0.1.1-dev.3")
+var version = semver.MustParse("0.1.1-dev.4")
 var gnomon = gnomes.NewGnomes()
 
 // Check duel package version
@@ -39,31 +39,32 @@ func Version() semver.Version {
 func StartApp() {
 	n := runtime.NumCPU()
 	runtime.GOMAXPROCS(n)
+
+	// Initialize logrus logger to stdout
 	gnomes.InitLogrusLog(logrus.InfoLevel)
-	config := menu.ReadDreamsConfig(app_tag)
 
-	a := app.NewWithID(fmt.Sprintf("%s Client", app_tag))
-	a.Settings().SetTheme(bundle.DeroTheme(config.Skin))
-	w := a.NewWindow(app_tag)
-	w.SetIcon(ResourceDuelIconPng)
-	w.Resize(fyne.NewSize(1400, 800))
-	w.CenterOnScreen()
-	w.SetMaster()
+	// Read config.json file
+	config := menu.GetSettings(appName)
+
+	// Initialize Fyne app and window as dreams.AppObject
+	d := dreams.NewFyneApp(
+		appID,
+		appName,
+		"DERO Asset Duels",
+		bundle.DeroTheme(config.Skin),
+		ResourceDuelIconPng,
+		menu.DefaultBackgroundResource(),
+		true)
+
+	// Initialize closing func and channel
 	done := make(chan struct{})
-
-	menu.Theme.Img = *canvas.NewImageFromResource(menu.DefaultThemeResource())
-	d := dreams.AppObject{
-		App:        a,
-		Window:     w,
-		Background: container.NewStack(&menu.Theme.Img),
-	}
 
 	closeFunc := func() {
 		menu.SetClose(true)
 		save := dreams.SaveData{
 			Skin:   config.Skin,
 			DBtype: gnomon.DBStorageType(),
-			Theme:  menu.Theme.Name,
+			Theme:  dreams.Theme.Name,
 		}
 
 		if rpc.Daemon.Rpc == "" {
@@ -72,14 +73,15 @@ func StartApp() {
 			save.Daemon = []string{rpc.Daemon.Rpc}
 		}
 
-		menu.WriteDreamsConfig(save)
-		gnomon.Stop(app_tag)
+		menu.StoreSettings(save)
+		gnomon.Stop(appName)
 		d.StopProcess()
-		w.Close()
+		d.Window.Close()
 	}
 
-	w.SetCloseIntercept(closeFunc)
+	d.Window.SetCloseIntercept(closeFunc)
 
+	// Handle ctrl+c close
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -88,24 +90,33 @@ func StartApp() {
 		closeFunc()
 	}()
 
+	// Set Gnomon defaults
 	gnomon.SetDBStorageType("boltdb")
 	gnomon.SetFastsync(true, true, 10000)
-	d.SetChannels(1)
 
-	// Create dwidget rpc connect box
-	connect_box := dwidget.NewHorizontalEntries(app_tag, 1)
-	connect_box.Button.OnTapped = func() {
-		// Get Dero wallet address
-		rpc.GetAddress(app_tag)
+	// Set channels for Duels and NFA market routines
+	d.SetChannels(2)
 
-		// Ping daemon
-		rpc.Ping()
+	// Create dwidget connection entries, using default OnTapped for RPC/XSWD connections
+	connection := dwidget.NewHorizontalEntries(appName, 1, &d)
 
-		// Start Gnomon with search filters when connected to daemon
-		if rpc.Daemon.IsConnected() && !gnomon.IsInitialized() && !gnomon.IsStarting() {
-			go gnomes.StartGnomon(app_tag, gnomon.DBStorageType(), []string{rpc.GetSCCode(DUELSCID), gnomes.NFA_SEARCH_FILTER}, 0, 0, nil)
+	// Gnomon shutdown on daemon disconnect
+	connection.Connected.OnChanged = func(b bool) {
+		if b {
+			// Start Gnomon with search filters when connected to daemon
+			if rpc.Daemon.IsConnected() && !gnomon.IsInitialized() && !gnomon.IsStarting() {
+				go gnomes.StartGnomon(appName, gnomon.DBStorageType(), []string{rpc.GetSCCode(DUELSCID), gnomes.NFA_SEARCH_FILTER}, 0, 0, nil)
+			}
+		} else {
+			gnomon.Stop(appName)
 		}
 	}
+
+	// Set any saved daemon configs
+	connection.AddDaemonOptions(config.Daemon)
+
+	// Adding dReams indicator panel for wallet, daemon and Gnomon
+	connection.AddIndicator(menu.StartIndicators(nil))
 
 	// Main routine
 	go func() {
@@ -117,23 +128,25 @@ func StartApp() {
 			select {
 			case <-ticker.C: // do on interval
 				rpc.Ping()
-				rpc.EchoWallet(app_tag)
-				go rpc.GetDreamsBalances(rpc.SCIDs)
-				rpc.GetWalletHeight(app_tag)
-				gnomes.EndPoint()
+				rpc.Wallet.Sync()
+
+				if rpc.Daemon.IsConnected() {
+					connection.Connected.SetChecked(true)
+				} else {
+					connection.Connected.SetChecked(false)
+				}
 
 				if rpc.Wallet.IsConnected() && gnomon.IsReady() {
-					connect_box.RefreshBalance()
-					menu.DisableIndexControls(false)
+					gnomes.EndPoint()
+					connection.RefreshBalance()
 					if !synced {
-						checkNFAs(app_tag, true, false, nil)
+						checkNFAs(appName, true, false, nil)
 						synced = true
 					}
 				} else {
 					menu.Assets.Asset = []menu.Asset{}
 					menu.Assets.List.Refresh()
 					menu.Assets.Claim.Hide()
-					menu.DisableIndexControls(true)
 					synced = false
 				}
 
@@ -154,7 +167,7 @@ func StartApp() {
 				d.SignalChannel()
 
 			case <-d.Closing(): // exit loop
-				logger.Printf("[%s] Closing...\n", app_tag)
+				logger.Printf("[%s] Closing...\n", appName)
 				ticker.Stop()
 				d.CloseAllDapps()
 				time.Sleep(time.Second)
@@ -165,34 +178,23 @@ func StartApp() {
 		}
 	}()
 
-	// Gnomon shutdown on daemon disconnect
-	connect_box.Disconnect.OnChanged = func(b bool) {
-		if !b {
-			gnomon.Stop(app_tag)
-		}
-	}
-
-	// Set any saved daemon configs
-	connect_box.AddDaemonOptions(config.Daemon)
-
-	// Adding dReams indicator panel for wallet, daemon and Gnomon
-	connect_box.Container.Objects[0].(*fyne.Container).Add(menu.StartIndicators())
-
+	// Layout app tabs
 	tabs := container.NewAppTabs(
-		container.NewTabItem("Duels", LayoutAllItems(menu.Assets.SCIDs, &d)),
-		container.NewTabItem("Assets", menu.PlaceAssets(app_tag, profile(&d), nil, bundle.ResourceMarketIconPng, &d)),
+		container.NewTabItem("Duels", LayoutAll(menu.Assets.SCIDs, &d)),
+		container.NewTabItem("Assets", menu.PlaceAssets(appName, profile(&d), nil, bundle.ResourceMarketIconPng, &d)),
 		container.NewTabItem("Market", menu.PlaceMarket(&d)),
-		container.NewTabItem("Log", rpc.SessionLog(app_tag, version)))
+		container.NewTabItem("Log", rpc.SessionLog(appName, version)))
 
 	tabs.SetTabLocation(container.TabLocationBottom)
 
+	// Start app and place tabs
 	go func() {
 		time.Sleep(450 * time.Millisecond)
-		w.SetContent(container.NewStack(d.Background, tabs, container.NewVBox(layout.NewSpacer(), connect_box.Container)))
+		d.Window.SetContent(container.NewStack(d.Background, tabs, container.NewVBox(layout.NewSpacer(), connection.Container)))
 	}()
-	w.ShowAndRun()
+	d.Window.ShowAndRun()
 	<-done
-	logger.Printf("[%s] Closed\n", app_tag)
+	logger.Printf("[%s] Closed\n", appName)
 }
 
 // Checks for valid duel NFAs
