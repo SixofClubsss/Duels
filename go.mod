@@ -6,7 +6,7 @@ require (
 	fyne.io/fyne/v2 v2.4.4
 	github.com/blang/semver/v4 v4.0.0
 	github.com/civilware/Gnomon v0.0.0-20240215215804-cfa19c264d97
-	github.com/dReam-dApps/dReams v0.11.2-0.20240320081104-78b46137b22d
+	github.com/dReam-dApps/dReams v0.11.2-0.20240328042802-d40dc50c110c
 	github.com/deroproject/derohe v0.0.0-20240215152352-a5a0e6a68ada
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/sirupsen/logrus v1.9.3
@@ -16,7 +16,7 @@ replace github.com/deroproject/derohe => github.com/SixofClubsss/derohe v0.0.0-2
 
 require (
 	fyne.io/systray v1.10.1-0.20231115130155-104f5ef7839e // indirect
-	fyne.io/x/fyne v0.0.0-20230717140956-ad10f343f15e // indirect
+	fyne.io/x/fyne v0.0.0-20240326131024-3ba9170cc3be // indirect
 	github.com/VictoriaMetrics/metrics v1.24.0 // indirect
 	github.com/beevik/ntp v1.3.0 // indirect
 	github.com/caarlos0/env/v6 v6.10.1 // indirect
