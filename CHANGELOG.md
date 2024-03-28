@@ -6,9 +6,16 @@ This file lists the changes to Duels repo with each version.
 
 ### Added
 
+* XSWD and DERO connections and calls
 * dSkullz collection
 * isValidCharacter() and isValidItem()
 * dReams market to cmd
+
+### Changed
+
+* Update StartApp with upstream functions
+* Delay showing hardcore results
+* Ui checks for self ref
 
 
 ## 0.1.1 - January 19 2024
