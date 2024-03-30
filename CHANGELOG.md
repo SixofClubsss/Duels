@@ -28,6 +28,7 @@ This file lists the changes to Duels repo with each version.
 * Sort finals by height
 * 90 sec TX confirm durations
 * Cleaned up `rpc` client var names
+* Character images in center position in lists 
 
 
 ## 0.1.0 - December 23 2023

@@ -414,8 +414,8 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(header)
 
 					if Duels.Index[id].Items > 1 {
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1] = Duels.Index[id].Duelist.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1] = Duels.Index[id].Duelist.IconImage(0, 0)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2] = Duels.Index[id].Duelist.IconImage(0, 2)
 						o.Refresh()
 						return
@@ -753,12 +753,12 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(header)
 
 					if Duels.Index[id].Items > 1 {
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 2)
 
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 0)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 0)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 2)
 						o.Refresh()
 						return
@@ -1076,12 +1076,12 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*widget.Label).SetText(fmt.Sprintf("Earnings: (%s %s)", rpc.FromAtomic(aEarn, 5), Duels.Index[id].assetName()))
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[2].(*widget.Label).SetText(fmt.Sprintf("Earnings: (%s %s)", rpc.FromAtomic(bEarn, 5), Duels.Index[id].assetName()))
 					if Duels.Index[id].Items > 1 {
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 2)
 
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 0)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 0)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 2)
 						o.Refresh()
 						return
