@@ -684,7 +684,7 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 				nil,
 				opponent_equip_box)
 
-			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = container.NewStack(bundle.NewAlpha180(), opponent_equip_cont)
+			max.Objects[0].(*container.Split).Trailing.(*fyne.Container).Objects[1] = container.NewStack(bundle.NewAlpha180(0, 0), opponent_equip_cont)
 			Joins.List.UnselectAll()
 		}()
 	}
@@ -704,11 +704,15 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 					container.NewHBox( // 0-0
 						container.NewVBox( // 0-0-0
 							container.NewHBox( // 0-0-0-0
-								dwidget.NewCenterLabel(""),                    // 0-0-0-0-0
-								container.NewStack(iconSmall(nil, "", false)), // 0-0-0-0-1
-								container.NewStack(layout.NewSpacer()),        // 0-0-0-0-2
-								container.NewStack(layout.NewSpacer())),       // 0-0-0-0-3
-							dwidget.NewTrailingLabel("")), // 0-0-0-1
+								layout.NewSpacer(),                            // 0-0-0-0-0
+								dwidget.NewCenterLabel(""),                    // 0-0-0-0-1
+								container.NewStack(iconSmall(nil, "", false)), // 0-0-0-0-2
+								container.NewStack(layout.NewSpacer()),        // 0-0-0-0-3
+								container.NewStack(layout.NewSpacer())),       // 0-0-0-0-4
+							container.NewHBox( // 0-0-0-1
+								layout.NewSpacer(),           // 0-0-0-1-0
+								dwidget.NewTrailingLabel(""), // 0-0-0-1-1
+								dwidget.NewSpacer(2, 0))),    // 0-0-0-1-2
 
 						widget.NewSeparator(),                        // 0-0-1
 						canvas.NewText("   VS   ", bundle.TextColor), // 0-0-2
@@ -720,7 +724,9 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 								container.NewStack(layout.NewSpacer()), // 0-0-4-0-1
 								container.NewStack(layout.NewSpacer()), // 0-0-4-0-2
 								dwidget.NewCenterLabel("")),            // 0-0-4-0-3
-							widget.NewLabel(""))))) // 0-0-4-1
+							container.NewHBox( // 0-0-4-1
+								dwidget.NewSpacer(5, 0), // 0-0-4-1-0
+								widget.NewLabel("")))))) // 0-0-4-1-1
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			go func() {
@@ -744,18 +750,18 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 
 				header := fmt.Sprintf("Duel #%s   Pot: (%s %s)   Items: (%d)   Death Match: (%s)", Duels.Index[id].Num, rpc.FromAtomic(Duels.Index[id].Amt*2, 5), Duels.Index[id].assetName(), Duels.Index[id].Items, Duels.Index[id].DM)
 				if Duels.Index[id].Opponent.Char != "" && o.(*fyne.Container).Objects[1].(*widget.Label).Text != header {
-					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*widget.Label).SetText(chopAddr(Duels.Index[id].Duelist.Address))
-					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Duelist.getRankString())
+					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*widget.Label).SetText(chopAddr(Duels.Index[id].Duelist.Address))
+					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Duelist.getRankString())
 
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*widget.Label).SetText(chopAddr(Duels.Index[id].Opponent.Address))
-					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Opponent.getRankString())
+					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[1].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Opponent.getRankString())
 
 					o.(*fyne.Container).Objects[1].(*widget.Label).SetText(header)
 
 					if Duels.Index[id].Items > 1 {
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 2)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 2)
 
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 1)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 0)
@@ -765,9 +771,9 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 					}
 
 					if Duels.Index[id].Items > 0 {
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = layout.NewSpacer()
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = layout.NewSpacer()
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
 
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 0)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 1)
@@ -776,9 +782,9 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 						return
 					}
 
-					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = layout.NewSpacer()
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = layout.NewSpacer()
+					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
 
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 0)
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = layout.NewSpacer()
@@ -1012,10 +1018,14 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 							container.NewHBox( // 0-0-0-0
 								container.NewVBox( // 0-0-0-0-0
 									dwidget.NewTrailingLabel("")), // 0-0-0-0-0-1
-								container.NewStack(iconSmall(nil, "", false)), // 0-0-0-0-1
-								container.NewStack(layout.NewSpacer()),        // 0-0-0-0-1
-								container.NewStack(layout.NewSpacer())),       // 0-0-0-0-3
-							dwidget.NewTrailingLabel(""),  // 0-0-0-1
+								layout.NewSpacer(), // 0-0-0-0-1
+								container.NewStack(iconSmall(nil, "", false)), // 0-0-0-0-2
+								container.NewStack(layout.NewSpacer()),        // 0-0-0-0-3
+								container.NewStack(layout.NewSpacer())),       // 0-0-0-0-4
+							container.NewHBox( // 0-0-0-1
+								layout.NewSpacer(),           // 0-0-0-1-0
+								dwidget.NewTrailingLabel(""), // 0-0-0-1-1
+								dwidget.NewSpacer(2, 0)),     // 0-0-0-1-2
 							dwidget.NewTrailingLabel("")), // 0-0-0-2
 
 						widget.NewSeparator(), // 0-0-1
@@ -1029,7 +1039,9 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 								container.NewStack(layout.NewSpacer()), // 0-0-4-0-2
 								container.NewVBox( // 0-0-4-0-3
 									widget.NewLabel(""))), // 0-0-4-0-3-0
-							widget.NewLabel(""),    // 0-0-4-1
+							container.NewHBox( // 0-0-4-1
+								dwidget.NewSpacer(5, 0), // 0-0-4-1-0
+								widget.NewLabel("")),    // 0-0-4-1-1
 							widget.NewLabel(""))))) // 0-0-4-2
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
@@ -1058,7 +1070,6 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 						arrow = bundle.LeftArrow(fyne.NewSize(80, 80))
 					} else {
 						arrow = bundle.RightArrow(fyne.NewSize(80, 80))
-
 					}
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = arrow
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].endedIn())
@@ -1069,16 +1080,16 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*widget.Label).SetText(Duels.Index[id].Duelist.findDuelResult())
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0].(*widget.Label).SetText(Duels.Index[id].Opponent.findDuelResult())
 
-					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Duelist.getRankString())
-					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Opponent.getRankString())
+					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Duelist.getRankString())
+					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[1].(*fyne.Container).Objects[1].(*widget.Label).SetText(Duels.Index[id].Opponent.getRankString())
 
 					aEarn, bEarn := Duels.Index[id].findEarning()
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*widget.Label).SetText(fmt.Sprintf("Earnings: (%s %s)", rpc.FromAtomic(aEarn, 5), Duels.Index[id].assetName()))
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[2].(*widget.Label).SetText(fmt.Sprintf("Earnings: (%s %s)", rpc.FromAtomic(bEarn, 5), Duels.Index[id].assetName()))
 					if Duels.Index[id].Items > 1 {
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 2)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 2)
 
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 1)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 0)
@@ -1088,9 +1099,9 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 					}
 
 					if Duels.Index[id].Items > 0 {
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
-						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = layout.NewSpacer()
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = layout.NewSpacer()
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
+						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 1)
 
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 0)
 						o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 1)
@@ -1099,9 +1110,9 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 						return
 					}
 
-					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[2].(*fyne.Container).Objects[0] = layout.NewSpacer()
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[3].(*fyne.Container).Objects[0] = layout.NewSpacer()
+					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0] = Duels.Index[id].Duelist.IconImage(0, 0)
 
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[0] = Duels.Index[id].Opponent.IconImage(0, 0)
 					o.(*fyne.Container).Objects[0].(*fyne.Container).Objects[0].(*fyne.Container).Objects[4].(*fyne.Container).Objects[0].(*fyne.Container).Objects[1].(*fyne.Container).Objects[0] = layout.NewSpacer()
@@ -1206,7 +1217,7 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 
 	top_label := container.NewHBox(D.Left.Label, layout.NewSpacer(), D.Right.Label)
 
-	max = container.NewStack(container.NewHSplit(container.NewStack(sync_cont), container.NewStack(bundle.NewAlpha120(), tabs)))
+	max = container.NewStack(container.NewHSplit(container.NewStack(sync_cont), container.NewStack(bundle.NewAlpha120(0, 0), tabs)))
 	max.Objects[0].(*container.Split).SetOffset(0)
 
 	// Start a duel form

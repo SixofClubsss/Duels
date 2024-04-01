@@ -16,6 +16,7 @@ This file lists the changes to Duels repo with each version.
 * Update StartApp with upstream functions
 * Delay showing hardcore results
 * Ui checks for self ref
+* Align list images/text
 
 
 ## 0.1.1 - January 19 2024

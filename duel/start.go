@@ -27,7 +27,7 @@ import (
 const appName = "Duels"
 const appID = "dreamdapps.io.duels"
 
-var version = semver.MustParse("0.1.1-dev.6")
+var version = semver.MustParse("0.1.1-dev.7")
 var gnomon = gnomes.NewGnomes()
 
 // Check duel package version

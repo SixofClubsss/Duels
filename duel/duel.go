@@ -1115,13 +1115,14 @@ func (p playerInfo) getItemRank(i int) uint64 {
 
 // Creates the rank display string
 func (p playerInfo) getRankString() (str string) {
-	str = fmt.Sprintf("{R%d}", validateAssetRank(p.Char))
 	if p.Item1 != "" {
-		str = str + fmt.Sprintf(" {R%d}", validateAssetRank(p.Item1))
-	}
-
-	if p.Item2 != "" {
-		str = str + fmt.Sprintf(" {R%d}", validateAssetRank(p.Item2))
+		if p.Item2 != "" {
+			str = fmt.Sprintf("{R%d}           {R%d}           {R%d}", validateAssetRank(p.Item1), validateAssetRank(p.Char), validateAssetRank(p.Item2))
+		} else {
+			str = fmt.Sprintf("{R%d}          {R%d}", validateAssetRank(p.Char), validateAssetRank(p.Item1))
+		}
+	} else {
+		str = fmt.Sprintf("{R%d}", validateAssetRank(p.Char))
 	}
 
 	return
