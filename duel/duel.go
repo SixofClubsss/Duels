@@ -359,7 +359,7 @@ func GetJoins(nums []uint64) (update bool) {
 					item2Str = item2[0]
 				}
 
-				logger.Debugln("[GetJoins] Storing A", n)
+				logger.Debugln("[GetJoins] Storing duelist info", n)
 				e = entry{
 					Num:      n,
 					Init:     u,
@@ -412,7 +412,7 @@ func GetAllDuels() (update bool) {
 
 			if v.Opponent.Char != "" {
 				if Ready.ExistsIndex(u) {
-					logger.Debugf("[GetAllDuels] %d b Char already here\n", u)
+					logger.Debugf("[GetAllDuels] %d opponent already here\n", u)
 				} else if !v.Complete {
 					Ready.All = append(Ready.All, u)
 					Joins.RemoveIndex(u)
@@ -434,6 +434,12 @@ func GetAllDuels() (update bool) {
 				if ready_stamp == nil {
 					logger.Debugf("[GetAllDuels] %s no ready stamp\n", n)
 					ready_stamp = append(ready_stamp, 0)
+				} else {
+					if time.Now().Unix() < int64(ready_stamp[0])+45 {
+						logger.Debugf("[GetAllDuels] %s ready stamp delay\n", n)
+						Joins.RemoveIndex(u)
+						continue
+					}
 				}
 
 				char, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "ch_b_"+n)
@@ -454,16 +460,24 @@ func GetAllDuels() (update bool) {
 					continue
 				}
 
-				_, valA := gnomon.GetSCIDValuesByKey(DUELSCID, "v_a_"+n)
-				if valA == nil {
-					logger.Debugf("[GetAllDuels] %s no valA\n", n)
-					continue
-				}
+				// Skip getting values if hardcore
+				var valueA, valueB uint64
+				if v.Rule == "No" {
+					_, valA := gnomon.GetSCIDValuesByKey(DUELSCID, "v_a_"+n)
+					if valA == nil {
+						logger.Debugf("[GetAllDuels] %s no valA\n", n)
+						continue
+					}
 
-				_, valB := gnomon.GetSCIDValuesByKey(DUELSCID, "v_b_"+n)
-				if valB == nil {
-					logger.Debugf("[GetAllDuels] %s no valB\n", n)
-					continue
+					valueA = valA[0]
+
+					_, valB := gnomon.GetSCIDValuesByKey(DUELSCID, "v_b_"+n)
+					if valB == nil {
+						logger.Debugf("[GetAllDuels] %s no valB\n", n)
+						continue
+					}
+
+					valueB = valB[0]
 				}
 
 				var item1Str, item2Str string
@@ -503,14 +517,14 @@ func GetAllDuels() (update bool) {
 
 				v.Init = init[0]
 				v.Ready = ready_stamp[0]
-				v.Duelist.Value = valA[0]
+				v.Duelist.Value = valueA
 				v.Opponent = playerInfo{
 					Address: address[0],
 					Char:    char[0],
 					Item1:   item1Str,
 					Item2:   item2Str,
 					Opt:     option[0],
-					Value:   valB[0],
+					Value:   valueB,
 					Icon: icons{
 						Char:  charIcon,
 						Item1: item1Img,
@@ -518,7 +532,7 @@ func GetAllDuels() (update bool) {
 					},
 				}
 
-				logger.Debugln("[GetAllDuels] Storing B Info", u)
+				logger.Debugln("[GetAllDuels] Storing opponent Info", u)
 				update = true
 				Duels.WriteEntry(u, v)
 			} else {
@@ -556,18 +570,38 @@ func GetFinals() (update bool) {
 						Ready.RemoveIndex(u)
 
 						// Get height when hardcore duel results were finalized
-						if v.Rule == "Yes" && v.Height == 0 {
-							if height := rpc.GetDaemonTx(winner[1]); height != nil {
-								v.Height = height.Block_Height
-								Duels.WriteEntry(u, v)
+						if v.Rule == "Yes" {
+							if v.Height == 0 {
+								if height := rpc.GetDaemonTx(winner[1]); height != nil {
+									v.Height = height.Block_Height
+									Duels.WriteEntry(u, v)
+								}
+
+								continue
 							}
 
-							continue
-						}
+							// Delay showing hardcore results
+							if gnomon.GetLastHeight() <= v.Height+1 {
+								logger.Debugln("[GetFinals] hardcore delay")
+								continue
+							}
 
-						// Delay showing hardcore results
-						if gnomon.GetLastHeight() <= v.Height+1 {
-							continue
+							// Recheck values for hardcore
+							_, valA := gnomon.GetSCIDValuesByKey(DUELSCID, "v_a_"+n)
+							if valA == nil {
+								logger.Debugf("[GetFinals] %s no valA\n", n)
+								continue
+							}
+
+							v.Duelist.Value = valA[0]
+
+							_, valB := gnomon.GetSCIDValuesByKey(DUELSCID, "v_b_"+n)
+							if valB == nil {
+								logger.Debugf("[GetFinals] %s no valB\n", n)
+								continue
+							}
+
+							v.Opponent.Value = valB[0]
 						}
 
 						v.Winner = rpc.DeroAddressFromKey(winner[0])

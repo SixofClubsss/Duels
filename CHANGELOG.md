@@ -10,13 +10,21 @@ This file lists the changes to Duels repo with each version.
 * dSkullz collection
 * isValidCharacter() and isValidItem()
 * dReams market to cmd
+* Search by Duel number
 
 ### Changed
 
+* Fyne 2.4.4
+* dReams 0.12.0
 * Update StartApp with upstream functions
 * Delay showing hardcore results
 * Ui checks for self ref
 * Align list images/text
+
+
+### Fixed
+
+* Show sync progress after clearing cache
 
 
 ## 0.1.1 - January 19 2024

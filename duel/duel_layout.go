@@ -1127,6 +1127,10 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 		Duels.RLock()
 		defer Duels.RUnlock()
 
+		if len(Finals.All) < 1 {
+			return
+		}
+
 		i := Finals.All[id]
 
 		buildCont := func(s string) *fyne.Container {
@@ -1181,10 +1185,10 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 
 	tabs = container.NewAppTabs(
 		container.NewTabItemWithIcon("", ResourceDuelCirclePng, layout.NewSpacer()),
-		container.NewTabItem("Join", container.NewBorder(nil, search.joins.searchDuels([]string{"Address", "Amount", "Currency", "Death Match"}, false, &Joins, d), nil, nil, Joins.List)),
-		container.NewTabItem("Duels", container.NewBorder(nil, search.ready.searchDuels([]string{"Address", "Amount", "Currency", "Death Match"}, false, &Ready, d), nil, nil, Ready.List)),
+		container.NewTabItem("Join", container.NewBorder(nil, search.joins.searchDuels([]string{"Address", "Amount", "Currency", "Death Match", "Number"}, false, &Joins, d), nil, nil, Joins.List)),
+		container.NewTabItem("Duels", container.NewBorder(nil, search.ready.searchDuels([]string{"Address", "Amount", "Currency", "Death Match", "Number"}, false, &Ready, d), nil, nil, Ready.List)),
 		container.NewTabItem("Graves", container.NewBorder(nil, search.graves.searchGraves(d), nil, nil, Graveyard.List)),
-		container.NewTabItem("Results", container.NewBorder(nil, search.results.searchDuels([]string{"Address", "Amount", "Currency", "Death Match", "My Duels", "Odds"}, true, &Finals, d), nil, nil, Finals.List)),
+		container.NewTabItem("Results", container.NewBorder(nil, search.results.searchDuels([]string{"Address", "Amount", "Currency", "Death Match", "My Duels", "Number", "Odds"}, true, &Finals, d), nil, nil, Finals.List)),
 		container.NewTabItem("Leaders", Leaders.list))
 
 	tabs.DisableIndex(0)
@@ -1637,7 +1641,6 @@ func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d
 	yn_select := widget.NewSelect([]string{"Yes", "No"}, nil)
 
 	curr_select := widget.NewSelect([]string{"DERO", "dReams"}, nil)
-	curr_select.PlaceHolder = "Select Currency"
 
 	search_entry := widget.NewEntry()
 	search_entry.SetPlaceHolder("Search:")
@@ -1649,20 +1652,26 @@ func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d
 		case "Amount":
 			amt_entry.AllowFloat = true
 			max.Objects[0] = amt_entry
+			amt_entry.SetPlaceHolder("Amount:")
 		case "Currency":
 			max.Objects[0] = curr_select
 		case "Death Match":
 			max.Objects[0] = yn_select
 		case "My Duels":
-			max.Objects[0] = search_entry
 			search_entry.SetPlaceHolder(s + ":")
 			search_entry.SetText(rpc.Wallet.Address)
+			max.Objects[0] = search_entry
+		case "Number":
+			amt_entry.AllowFloat = false
+			amt_entry.SetPlaceHolder("Duel #:")
+			max.Objects[0] = amt_entry
 		case "Odds":
 			amt_entry.AllowFloat = false
+			amt_entry.SetPlaceHolder("Odds:")
 			max.Objects[0] = amt_entry
 		case "SCID":
-			max.Objects[0] = search_entry
 			search_entry.SetPlaceHolder(s + ":")
+			max.Objects[0] = search_entry
 		}
 	})
 
@@ -1674,6 +1683,7 @@ func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d
 		l.List.Length = func() int {
 			return len(l.All)
 		}
+		l.List.Refresh()
 	})
 	clear_button.Importance = widget.LowImportance
 
@@ -1721,6 +1731,15 @@ func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d
 					s.results = append(s.results, u)
 				}
 			}
+		case "Number":
+			for u, r := range Duels.Index {
+				if r.Num == amt_entry.Text {
+					if l.ExistsIndex(u) {
+						s.results = append(s.results, u)
+						break
+					}
+				}
+			}
 		case "Odds":
 			search_odds, err := strconv.ParseUint(amt_entry.Text, 10, 64)
 			if err != nil {
@@ -1734,9 +1753,7 @@ func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d
 			}
 		default:
 			info := dialog.NewInformation("Search", "Not a valid search query", d.Window)
-			info.SetOnClosed(func() {
-				search_select.FocusLost()
-			})
+			info.SetOnClosed(search_select.FocusLost)
 			info.Show()
 			search_select.FocusGained()
 			return
@@ -1779,18 +1796,23 @@ func (s *searches) searchGraves(d *dreams.AppObject) (max *fyne.Container) {
 	time_select := widget.NewSelect([]string{"Available", "Coming soon"}, nil)
 
 	curr_select := widget.NewSelect([]string{"DERO", "dReams"}, nil)
-	curr_select.PlaceHolder = "Select Currency"
 
 	search_entry := widget.NewEntry()
 	search_entry.SetPlaceHolder("Search:")
 	search_select := widget.NewSelect([]string{"Amount", "Availability", "Currency", "SCID"}, func(s string) {
 		switch s {
 		case "Amount":
+			amt_entry.AllowFloat = true
+			amt_entry.SetPlaceHolder("Amount:")
 			max.Objects[0] = amt_entry
 		case "Availability":
 			max.Objects[0] = time_select
 		case "Currency":
 			max.Objects[0] = curr_select
+		case "Number":
+			amt_entry.AllowFloat = false
+			amt_entry.SetPlaceHolder("Duel #:")
+			max.Objects[0] = amt_entry
 		case "SCID":
 			max.Objects[0] = search_entry
 			search_entry.SetPlaceHolder(s + ":")
@@ -1840,7 +1862,12 @@ func (s *searches) searchGraves(d *dreams.AppObject) (max *fyne.Container) {
 					s.results = append(s.results, u)
 				}
 			}
-
+		case "Number":
+			for u, r := range Graveyard.Index {
+				if r.Num == amt_entry.Text {
+					s.results = append(s.results, u)
+				}
+			}
 		case "SCID":
 			if len(search_entry.Text) != 64 {
 				dialog.NewInformation("Search", "Not a valid SCID", d.Window).Show()
