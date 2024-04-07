@@ -27,7 +27,7 @@ import (
 const appName = "Duels"
 const appID = "dreamdapps.io.duels"
 
-var version = semver.MustParse("0.1.1-dev.10")
+var version = semver.MustParse("0.1.1-dev.11")
 var gnomon = gnomes.NewGnomes()
 
 // Check duel package version
@@ -248,7 +248,10 @@ func checkNFAOwner(scid string, all bool) {
 					add.Name = header[0]
 					add.Collection = collection[0]
 					add.SCID = scid
-					add.Type = menu.AssetType(collection[0], "typeHdr")
+					if typeHdr, _ := gnomon.GetSCIDValuesByKey(scid, "typeHdr"); typeHdr != nil {
+						add.Type = typeHdr[0]
+						add.Utility = menu.AssetUtilityString(collection[0], typeHdr[0])
+					}
 
 					if isValidCharacter(collection[0]) || isValidItem(collection[0]) {
 						if all {

@@ -3,10 +3,10 @@ module github.com/SixofClubsss/Duels
 go 1.21.5
 
 require (
-	fyne.io/fyne/v2 v2.4.4-rc2.0.20240402155721-b703cfe79995
+	fyne.io/fyne/v2 v2.4.4-rc2.0.20240406182811-8c17ddaea67e
 	github.com/blang/semver/v4 v4.0.0
 	github.com/civilware/Gnomon v0.0.0-20240403103529-8b2fdb2b3106
-	github.com/dReam-dApps/dReams v0.11.2-0.20240404041221-83fb5ac73fd8
+	github.com/dReam-dApps/dReams v0.11.2-0.20240407213206-7d61c9ead1fe
 	github.com/deroproject/derohe v0.0.0-20240326214000-81d61c264e16
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/sirupsen/logrus v1.9.3
@@ -15,6 +15,7 @@ require (
 require (
 	fyne.io/systray v1.10.1-0.20231230205326-d160fd363db9 // indirect
 	fyne.io/x/fyne v0.0.0-20240326131024-3ba9170cc3be // indirect
+	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/beevik/ntp v1.3.0 // indirect
 	github.com/caarlos0/env/v6 v6.10.1 // indirect
 	github.com/cenkalti/hub v1.0.2 // indirect

@@ -41,8 +41,8 @@ cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9
 cloud.google.com/go/storage v1.14.0/go.mod h1:GrKmX003DSIwi9o29oFT7YDnHYwZoctc3fOKtUw0Xmo=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 fyne.io/fyne/v2 v2.4.3/go.mod h1:1h3BKxmQYRJlr2g+RGVxedzr6vLVQ/AJmFWcF9CJnoQ=
-fyne.io/fyne/v2 v2.4.4-rc2.0.20240402155721-b703cfe79995 h1:sFXzKhCEq+17U1FUvNGVaCjddKbOnRSZsO1pNhTJqMw=
-fyne.io/fyne/v2 v2.4.4-rc2.0.20240402155721-b703cfe79995/go.mod h1:YDkwyydMKsSDGKgVpWAQjk9bleX6b0CCp8cYxlKWVVk=
+fyne.io/fyne/v2 v2.4.4-rc2.0.20240406182811-8c17ddaea67e h1:/1RzDNORipAEO+2hw/5IWXwCTVQduKMU4TMj1e5WVnA=
+fyne.io/fyne/v2 v2.4.4-rc2.0.20240406182811-8c17ddaea67e/go.mod h1:PVqwJr/pqYgbVIJ32QGAWLRJCr+a65APiadfNFLMFZI=
 fyne.io/systray v1.10.1-0.20231115130155-104f5ef7839e/go.mod h1:oM2AQqGJ1AMo4nNqZFYU8xYygSBZkW2hmdJ7n4yjedE=
 fyne.io/systray v1.10.1-0.20231230205326-d160fd363db9 h1:E/gHmMVyk8TuI6JIgNIv/Qu1JABMVFBIkQ8lYRa5gkQ=
 fyne.io/systray v1.10.1-0.20231230205326-d160fd363db9/go.mod h1:RVwqP9nYMo7h5zViCBHri2FgjXF7H2cub7MAq4NSoLs=
@@ -93,8 +93,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.0/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsr
 github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creachadair/jrpc2 v0.35.4 h1:5ELLV7CMKLfALzkKNsQ//ngZLWDbEmAXgTgkL3JXAcU=
 github.com/creachadair/jrpc2 v0.35.4/go.mod h1:a53Cer/NMD1y8P9UB2XbuOLRELKRLDf8u7bRi4v1qsE=
-github.com/dReam-dApps/dReams v0.11.2-0.20240404041221-83fb5ac73fd8 h1:pCrxQCH1Fwrdcwt432A4OTGa+eir60PDouPiqhqPRm8=
-github.com/dReam-dApps/dReams v0.11.2-0.20240404041221-83fb5ac73fd8/go.mod h1:Ipz0Mw7mJxtXEe9peiQb+AEYKZThG1UHQzJdQ6+zx2A=
+github.com/dReam-dApps/dReams v0.11.2-0.20240407213206-7d61c9ead1fe h1:+4xduYjzW+emm8rRgtuEQXSBuf3nlTcU6vwkGB1GfS8=
+github.com/dReam-dApps/dReams v0.11.2-0.20240407213206-7d61c9ead1fe/go.mod h1:XNjdz9O+DBTAGzKI0HwwOGmchc49jHgQd3EHZwtcr4s=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
