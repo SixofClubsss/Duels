@@ -1199,14 +1199,18 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 		case "Join":
 			Joins.List.UnselectAll()
 			selected_join = 0
+			Joins.List.Refresh()
 		case "Duels":
 			Ready.List.UnselectAll()
 			selected_duel = 0
+			Ready.List.Refresh()
 		case "Graves":
 			Graveyard.List.UnselectAll()
 			selected_grave = 0
+			Graveyard.List.Refresh()
 		case "Results":
 			Finals.List.UnselectAll()
+			Finals.List.Refresh()
 		}
 	}
 
