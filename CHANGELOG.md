@@ -14,7 +14,7 @@ This file lists the changes to Duels repo with each version.
 
 ### Changed
 
-* Fyne 2.4.4
+* Fyne 2.4.5
 * dReams 0.12.0
 * Update StartApp with upstream functions
 * Delay showing hardcore results
