@@ -572,7 +572,7 @@ func GetFinals() (update bool) {
 						// Get height when hardcore duel results were finalized
 						if v.Rule == "Yes" {
 							if v.Height == 0 {
-								if height := rpc.GetDaemonTx(winner[1]); height != nil {
+								if height := rpc.Daemon.GetTx(winner[1]); height != nil {
 									v.Height = height.Block_Height
 									Duels.WriteEntry(u, v)
 								}
@@ -609,7 +609,7 @@ func GetFinals() (update bool) {
 						if v.Odds <= 950 {
 							v.Complete = true
 							if v.Height == 0 {
-								if height := rpc.GetDaemonTx(winner[1]); height != nil {
+								if height := rpc.Daemon.GetTx(winner[1]); height != nil {
 									v.Height = height.Block_Height
 								}
 							}
