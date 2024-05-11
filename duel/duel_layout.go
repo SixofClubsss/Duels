@@ -1530,9 +1530,19 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 					continue
 				}
 
+				if gnomon.IsStatus("fastsyncing") {
+					sync_label.SetText("Gnomon is fast syncing...")
+					d.WorkDone()
+					continue
+				}
+
 				if !synced && gnomes.Scan(d.IsConfiguring()) {
 					sync_label.SetText("Creating duels index, this may take a few minutes to complete")
 					logger.Println("[Duels] Syncing")
+					// Check current variables on SC and store
+					if err := gnomon.StoreLiveSCIDVariableDetails(DUELSCID); err != nil {
+						logger.Errorln("[Duels] Could not store current variables:", err)
+					}
 					gnomes.GetStorage("DUELBUCKET", "DUELS", &Duels)
 					synced = true
 				} else {

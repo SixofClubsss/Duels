@@ -205,9 +205,9 @@ func getInitNumbers() (nums []uint64) {
 		for _, v := range details {
 			switch str := v.Key.(type) {
 			case string:
-				s := strings.Split(str, "_")
-				if len(s) == 2 {
-					if s[0] == "init" {
+				if strings.HasPrefix(str, "init_") {
+					s := strings.Split(str, "_")
+					if len(s) == 2 {
 						u, err := strconv.ParseUint(s[1], 10, 64)
 						if err != nil {
 							continue
@@ -218,6 +218,8 @@ func getInitNumbers() (nums []uint64) {
 			}
 		}
 	}
+
+	sort.Slice(nums, func(i, j int) bool { return nums[i] < nums[j] })
 
 	return
 }
@@ -413,6 +415,10 @@ func GetAllDuels() (update bool) {
 			if v.Opponent.Char != "" {
 				if Ready.ExistsIndex(u) {
 					logger.Debugf("[GetAllDuels] %d opponent already here\n", u)
+					if v.Complete {
+						Joins.RemoveIndex(u)
+						update = true
+					}
 				} else if !v.Complete {
 					Ready.All = append(Ready.All, u)
 					Joins.RemoveIndex(u)
@@ -646,6 +652,8 @@ func GetFinals() (update bool) {
 				if !have {
 					heights = append(heights, v.Height)
 				}
+
+				Ready.RemoveIndex(u)
 			}
 		}
 

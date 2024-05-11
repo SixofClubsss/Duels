@@ -27,7 +27,7 @@ import (
 const appName = "Duels"
 const appID = "dreamdapps.io.duels"
 
-var version = semver.MustParse("0.1.1-dev.14")
+var version = semver.MustParse("0.1.1-dev.15")
 var gnomon = gnomes.NewGnomes()
 
 // Check duel package version
@@ -53,8 +53,7 @@ func StartApp() {
 		"DERO Asset Duels",
 		bundle.DeroTheme(config.Skin),
 		ResourceDuelIconPng,
-		menu.DefaultBackgroundResource(),
-		true)
+		menu.DefaultBackgroundResource())
 
 	// Initialize closing func and channel
 	done := make(chan struct{})
