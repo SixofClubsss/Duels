@@ -460,7 +460,7 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 
 			validated := Duels.Index[selected_join].validateCollection(false)
 
-			if rpc.Wallet.Address == Duels.Index[selected_join].Duelist.Address || (checkOwnerAndRefs() && !validated) {
+			if rpc.Wallet.IsAddress(Duels.Index[selected_join].Duelist.Address) || (checkOwnerAndRefs() && !validated) {
 				prefix := "W"
 				if !validated {
 					prefix = "Duelist not valid, w"
@@ -1536,7 +1536,7 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 					continue
 				}
 
-				if !synced && gnomes.Scan(d.IsConfiguring()) {
+				if !synced && gnomes.Scan() {
 					sync_label.SetText("Creating duels index, this may take a few minutes to complete")
 					logger.Println("[Duels] Syncing")
 					// Check current variables on SC and store
@@ -1673,7 +1673,7 @@ func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d
 			max.Objects[0] = yn_select
 		case "My Duels":
 			search_entry.SetPlaceHolder(s + ":")
-			search_entry.SetText(rpc.Wallet.Address)
+			search_entry.SetText(rpc.Wallet.Address())
 			max.Objects[0] = search_entry
 		case "Number":
 			amt_entry.AllowFloat = false
@@ -1741,7 +1741,7 @@ func (s *searches) searchDuels(opts []string, complete bool, l *dwidget.Lists, d
 			}
 		case "My Duels":
 			for u, r := range Duels.Index {
-				if r.Duelist.Address == rpc.Wallet.Address || r.Opponent.Address == rpc.Wallet.Address {
+				if rpc.Wallet.IsAddress(r.Duelist.Address) || rpc.Wallet.IsAddress(r.Opponent.Address) {
 					s.results = append(s.results, u)
 				}
 			}

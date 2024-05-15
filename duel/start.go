@@ -27,7 +27,7 @@ import (
 const appName = "Duels"
 const appID = "dreamdapps.io.duels"
 
-var version = semver.MustParse("0.1.1-dev.15")
+var version = semver.MustParse("0.1.1-dev.16")
 var gnomon = gnomes.NewGnomes()
 
 // Check duel package version
@@ -242,7 +242,7 @@ func checkNFAOwner(scid string, all bool) {
 			collection, _ := gnomon.GetSCIDValuesByKey(scid, "collection")
 			icon, _ := gnomon.GetSCIDValuesByKey(scid, "iconURLHdr")
 			if owner != nil && file != nil && collection != nil && icon != nil {
-				if owner[0] == rpc.Wallet.Address && menu.ValidNFA(file[0]) {
+				if rpc.Wallet.IsAddress(owner[0]) && menu.ValidNFA(file[0]) {
 					var add menu.Asset
 					add.Name = header[0]
 					add.Collection = collection[0]

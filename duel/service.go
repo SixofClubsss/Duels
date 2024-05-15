@@ -159,8 +159,7 @@ func RunRefService() {
 	rpc.Wallet.RPC.Init()
 
 	// Check for daemon connection
-	rpc.Daemon.Ping()
-	if !rpc.Daemon.IsConnected() {
+	if !rpc.Daemon.Ping() {
 		logger.Fatalf("[RefService] Daemon %s not connected\n", rpc.Daemon.Endpoint)
 	}
 
@@ -316,7 +315,7 @@ func refGetJoins() {
 					continue
 				}
 
-				if address[0] != rpc.Wallet.Address && time.Now().Unix() <= int64(buffer[0]) {
+				if !rpc.Wallet.IsAddress(address[0]) && time.Now().Unix() <= int64(buffer[0]) {
 					logger.Debugf("[refGetJoins] %s in buffer\n", n)
 					continue
 				}

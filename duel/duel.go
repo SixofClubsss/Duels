@@ -266,7 +266,7 @@ func GetJoins(nums []uint64) (update bool) {
 					continue
 				}
 
-				if address[0] != rpc.Wallet.Address && time.Now().Unix() <= int64(buffer[0]) {
+				if !rpc.Wallet.IsAddress(address[0]) && time.Now().Unix() <= int64(buffer[0]) {
 					logger.Debugf("[GetJoins] %s in buffer\n", n)
 					continue
 				}
@@ -777,9 +777,9 @@ func (duel entry) resultsHeaderString() string {
 
 // Check if connected wallet is duelist or opponent
 func (duel entry) checkDuelAddresses() bool {
-	if rpc.Wallet.Address == duel.Duelist.Address {
+	if rpc.Wallet.IsAddress(duel.Duelist.Address) {
 		return true
-	} else if rpc.Wallet.Address == duel.Opponent.Address {
+	} else if rpc.Wallet.IsAddress(duel.Opponent.Address) {
 		return true
 	}
 
@@ -1222,14 +1222,14 @@ func Disconnected() {
 // Check if Wallet.Address is owner or ref on duel SC
 func checkOwnerAndRefs() bool {
 	if own, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "owner"); own != nil {
-		if rpc.Wallet.Address == own[0] {
+		if rpc.Wallet.IsAddress(own[0]) {
 			return true
 		}
 	}
 
 	for i := 0; i < 10; i++ {
 		if ref, _ := gnomon.GetSCIDValuesByKey(DUELSCID, "ref"+strconv.Itoa(i)); ref != nil {
-			if rpc.Wallet.Address == ref[0] {
+			if rpc.Wallet.IsAddress(ref[0]) {
 				return true
 			}
 		}
