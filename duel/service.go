@@ -10,11 +10,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/civilware/tela/logger"
 	"github.com/dReam-dApps/dReams/gnomes"
 	"github.com/dReam-dApps/dReams/menu"
 	"github.com/dReam-dApps/dReams/rpc"
 	"github.com/docopt/docopt-go"
-	"github.com/sirupsen/logrus"
 )
 
 var command_line string = `RefService
@@ -84,7 +84,7 @@ func (s *service) IsStopped() {
 
 	s.Init = false
 	for s.Processing {
-		logger.Println("[RefService] Waiting for service to close")
+		logger.Printf("[RefService] Waiting for service to close\n")
 		time.Sleep(3 * time.Second)
 	}
 }
@@ -93,8 +93,6 @@ func (s *service) IsStopped() {
 func RunRefService() {
 	n := runtime.NumCPU()
 	runtime.GOMAXPROCS(n)
-
-	gnomes.InitLogrusLog(logrus.InfoLevel)
 
 	arguments, err := docopt.ParseArgs(command_line, nil, Version().String())
 	if err != nil {
@@ -153,7 +151,7 @@ func RunRefService() {
 	gnomon.SetParallel(parallel)
 	gnomon.SetDBStorageType("boltdb")
 
-	logger.Println("[RefService]", version, runtime.GOOS, runtime.GOARCH)
+	logger.Printf("[RefService] %s %s %s\n", version.String(), runtime.GOOS, runtime.GOARCH)
 
 	// Initialize wallet RPC server connection
 	rpc.Wallet.RPC.Init()
@@ -180,10 +178,10 @@ func RunRefService() {
 		Service.Stop()
 		menu.SetClose(true)
 		for Service.IsProcessing() {
-			logger.Println("[RefService] Waiting for service to close")
+			logger.Printf("[RefService] Waiting for service to close\n")
 			time.Sleep(3 * time.Second)
 		}
-		logger.Println("[RefService] Closing")
+		logger.Printf("[RefService] Closing\n")
 		os.Exit(0)
 	}()
 
@@ -199,7 +197,7 @@ func RunRefService() {
 			time.Sleep(time.Second)
 		}
 
-		logger.Println("[RefService] Starting when Gnomon is synced")
+		logger.Printf("[RefService] Starting when Gnomon is synced\n")
 		for !menu.IsClosing() && gnomon.IsRunning() && rpc.IsReady() {
 			rpc.Daemon.Ping()
 			rpc.Wallet.Echo()
@@ -235,17 +233,17 @@ func RunRefService() {
 // Main RefService process
 func refService() {
 	if rpc.IsReady() {
-		logger.Println("[refService] Initializing")
+		logger.Printf("[refService] Initializing\n")
 		for i := 5; i > 0; i-- {
 			if !Service.IsRunning() {
 				break
 			}
-			logger.Println("[refService] Starting in", i)
+			logger.Printf("[refService] Starting in %d\n", i)
 			time.Sleep(time.Second)
 		}
 
 		if Service.IsRunning() {
-			logger.Println("[refService] Starting")
+			logger.Printf("[refService] Starting\n")
 		}
 
 		for Service.IsRunning() && rpc.IsReady() {
@@ -254,7 +252,7 @@ func refService() {
 			refGetAllDuels()
 			GetFinals()
 			processReady()
-			logger.Debugln("[refService] Joins:", len(Joins.All), Joins.All, "Ready:", len(Ready.All), Ready.All, "Finals:", len(Finals.All), Finals.All)
+			logger.Debugf("[refService] Joins: %d %v  Ready: %d %v  Finals: %d %v\n", len(Joins.All), Joins.All, len(Ready.All), Ready.All, len(Finals.All), Finals.All)
 
 			if !gnomon.IsClosing() {
 				gnomes.StoreBolt("DUELBUCKET", "DUELS", &Duels)
@@ -268,9 +266,9 @@ func refService() {
 			}
 		}
 		Service.SetProcessing(false)
-		logger.Println("[refService] Shutting down")
+		logger.Printf("[refService] Shutting down\n")
 
-		logger.Println("[refService] Done")
+		logger.Printf("[refService] Done\n")
 	}
 	Service.Stop()
 }
@@ -301,7 +299,7 @@ func refGetJoins() {
 
 			e := Duels.SingleEntry(u)
 			if e.Num == "" {
-				logger.Debugln("[refGetJoins] Making")
+				logger.Debugf("[refGetJoins] Making\n")
 
 				_, buffer := gnomon.GetSCIDValuesByKey(DUELSCID, "stamp_"+n)
 				if buffer == nil {
@@ -414,14 +412,14 @@ func refGetJoins() {
 				}
 
 				if !e.validateCollection(false) {
-					logger.Warnln("[refGetJoins] Not a valid duelist, refunding")
+					logger.Warnf("[refGetJoins] Not a valid duelist, refunding\n")
 					tx := Refund(n)
 					time.Sleep(time.Second)
 					rpc.ConfirmTx(tx, "refService", 50)
 					continue
 				}
 
-				logger.Debugln("[refGetJoins] Storing duelist info", n)
+				logger.Debugf("[refGetJoins] Storing duelist info %s\n", n)
 				Duels.WriteEntry(u, e)
 				Joins.All = append(Joins.All, u)
 			} else if e.Opponent.Icon.Char == nil && !Joins.ExistsIndex(u) {
@@ -528,7 +526,7 @@ func refGetAllDuels() {
 					Value:   valB[0],
 				}
 
-				logger.Debugln("[refGetAllDuels] Storing opponent Info", u)
+				logger.Debugf("[refGetAllDuels] Storing opponent Info %d\n", u)
 				Duels.WriteEntry(u, v)
 			} else {
 				Ready.RemoveIndex(u)
@@ -549,7 +547,7 @@ func processReady() {
 	for u, e := range Duels.Index {
 		if e.Ready > 0 && !e.Complete {
 			if !e.validateCollection(true) || !e.validateCollection(false) {
-				logger.Warnln("[processReady] Not a valid collection, refunding")
+				logger.Warnf("[processReady] Not a valid collection, refunding\n")
 				tx := Refund(strconv.FormatUint(u, 10))
 				time.Sleep(time.Second)
 				rpc.ConfirmTx(tx, "refService", 50)

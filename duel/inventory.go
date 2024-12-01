@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"github.com/civilware/tela/logger"
 	dreams "github.com/dReam-dApps/dReams"
 	"github.com/dReam-dApps/dReams/bundle"
 	"github.com/dReam-dApps/dReams/menu"
@@ -113,7 +114,7 @@ func validateAssetRank(scid string) uint64 {
 		}
 
 		if err := json.Unmarshal([]byte(rpc.HexToString(split[1])), &rank); err != nil {
-			logger.Errorln("[validateAsset]", err)
+			logger.Errorf("[validateAsset] %s\n", err)
 			return 1
 		}
 
@@ -215,7 +216,7 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 			switch collection {
 			case "Dero Desperados":
 				if err := json.Unmarshal([]byte(rpc.HexToString(splitDesc[1])), &rank); err != nil {
-					logger.Errorln("[AddItemsToInventory]", err)
+					logger.Errorf("[AddItemsToInventory] %s\n", err)
 					return
 				}
 
@@ -223,7 +224,7 @@ func AddItemsToInventory(scid, header, owner, collection string) {
 				go Inventory.AddCharToInventory(header)
 			case "Desperado Guns":
 				if err := json.Unmarshal([]byte(rpc.HexToString(splitDesc[1])), &rank); err != nil {
-					logger.Errorln("[AddItemsToInventory]", err)
+					logger.Errorf("[AddItemsToInventory] %s\n", err)
 					return
 				}
 

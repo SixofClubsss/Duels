@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
+	"github.com/civilware/tela/logger"
 	"github.com/dReam-dApps/dReams/dwidget"
 	"github.com/dReam-dApps/dReams/rpc"
 )
@@ -86,7 +87,7 @@ func GetGraveyard() {
 							if _, time := gnomon.GetSCIDValuesByKey(DUELSCID, "time_"+split[1]+"_"+split[2]); time != nil {
 								img, err := downloadBytes(split[2])
 								if err != nil {
-									logger.Errorln("[GetGraveyard]", h.Key, err)
+									logger.Errorf("[GetGraveyard] %v %s\n", h.Key, err)
 									continue
 								}
 

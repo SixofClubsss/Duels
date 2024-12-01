@@ -11,13 +11,11 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 
-	//xwidget "fyne.io/x/fyne/widget"
-	"github.com/civilware/Gnomon/structures"
+	"github.com/civilware/tela/logger"
 	dreams "github.com/dReam-dApps/dReams"
 	"github.com/dReam-dApps/dReams/dwidget"
 	"github.com/dReam-dApps/dReams/gnomes"
 	"github.com/dReam-dApps/dReams/rpc"
-	"github.com/sirupsen/logrus"
 )
 
 type entries struct {
@@ -79,7 +77,6 @@ type leaderBoard struct {
 }
 
 var D dwidget.ContainerStack
-var logger = structures.Logger.WithFields(logrus.Fields{})
 var Duels entries
 var Leaders leaderBoard
 var Joins dwidget.Lists
@@ -252,7 +249,7 @@ func GetJoins(nums []uint64) (update bool) {
 
 			e := Duels.SingleEntry(u)
 			if e.Num == "" {
-				logger.Debugln("[GetJoins] Making")
+				logger.Debugf("[GetJoins] Making\n")
 
 				_, buffer := gnomon.GetSCIDValuesByKey(DUELSCID, "stamp_"+n)
 				if buffer == nil {
@@ -340,7 +337,7 @@ func GetJoins(nums []uint64) (update bool) {
 
 					item1Img, err = downloadBytes(item1[0])
 					if err != nil {
-						logger.Errorln("[GetJoins]", err)
+						logger.Errorf("[GetJoins] %s\n", err)
 						item1Img = resourceUnknownIconPng.StaticContent
 					}
 					item1Str = item1[0]
@@ -355,13 +352,13 @@ func GetJoins(nums []uint64) (update bool) {
 
 					item2Img, err = downloadBytes(item2[0])
 					if err != nil {
-						logger.Errorln("[GetJoins]", err)
+						logger.Errorf("[GetJoins] %s\n", err)
 						item2Img = resourceUnknownIconPng.StaticContent
 					}
 					item2Str = item2[0]
 				}
 
-				logger.Debugln("[GetJoins] Storing duelist info", n)
+				logger.Debugf("[GetJoins] Storing duelist info %s\n", n)
 				e = entry{
 					Num:      n,
 					Init:     u,
@@ -497,7 +494,7 @@ func GetAllDuels() (update bool) {
 
 					item1Img, err = downloadBytes(item1[0])
 					if err != nil {
-						logger.Debugln("[GetAllDuels]", err)
+						logger.Debugf("[GetAllDuels] %s\n", err)
 						item1Img = resourceUnknownIconPng.StaticContent
 					}
 					item1Str = item1[0]
@@ -512,7 +509,7 @@ func GetAllDuels() (update bool) {
 
 					item2Img, err = downloadBytes(item2[0])
 					if err != nil {
-						logger.Debugln("[GetAllDuels]", err)
+						logger.Debugf("[GetAllDuels] %s\n", err)
 						item2Img = resourceUnknownIconPng.StaticContent
 					}
 					item2Str = item2[0]
@@ -538,7 +535,7 @@ func GetAllDuels() (update bool) {
 					},
 				}
 
-				logger.Debugln("[GetAllDuels] Storing opponent Info", u)
+				logger.Debugf("[GetAllDuels] Storing opponent Info %d\n", u)
 				update = true
 				Duels.WriteEntry(u, v)
 			} else {
@@ -551,7 +548,7 @@ func GetAllDuels() (update bool) {
 		}
 	}
 
-	logger.Debugln("[GetAllDuels] Joins:", len(Joins.All), Joins.All, "Ready:", len(Ready.All), Ready.All, "Finals:", len(Finals.All), Finals.All, "Update:", update)
+	logger.Debugf("[GetAllDuels] Joins: %d %v  Ready: %d %v  Finals: %d %v  Update: %t\n", len(Joins.All), Joins.All, len(Ready.All), Ready.All, len(Finals.All), Finals.All, update)
 
 	return
 }
@@ -588,7 +585,7 @@ func GetFinals() (update bool) {
 
 							// Delay showing hardcore results
 							if gnomon.GetLastHeight() <= v.Height+1 {
-								logger.Debugln("[GetFinals] hardcore delay")
+								logger.Debugf("[GetFinals] hardcore delay\n")
 								continue
 							}
 
@@ -830,7 +827,7 @@ func (duel entry) diffOdds(r uint64) (perc uint64, rank1 uint64, diff uint64) {
 	case 2:
 		perc = 100 - (4 * diff)
 	default:
-		logger.Errorln("[diffOdds] Err - processing items")
+		logger.Errorf("[diffOdds] Could not process items\n")
 	}
 
 	return
@@ -839,7 +836,7 @@ func (duel entry) diffOdds(r uint64) (perc uint64, rank1 uint64, diff uint64) {
 // Owner and ref function to run regular duels
 func (duel entry) refDuel() (tx string) {
 	if !checkOwnerAndRefs() {
-		logger.Warnln("[refDuel] You are not the owner or a ref on this SCID")
+		logger.Warnf("[refDuel] You are not the owner or a ref on this SCID\n")
 		return
 	}
 
@@ -855,23 +852,23 @@ func (duel entry) refDuel() (tx string) {
 	valB := duel.Opponent.Value
 	finalB := valB - optB
 
-	logger.Debugln("[refDuel] A:", finalA, "B:", finalB)
+	logger.Debugf("[refDuel] A: %d  B: %d\n", finalA, finalB)
 
 	if finalA == 5 && finalB == 5 {
 		if optA > optB {
 			// A wins
 			winner = 'A'
 			address = duel.Duelist.Address
-			logger.Debugln("[refDuel] A Wins setting odds", odds)
+			logger.Debugf("[refDuel] A Wins setting odds %d\n", odds)
 		} else if optB > optA {
 			// B wins
 			winner = 'B'
 			address = duel.Opponent.Address
 			odds = 950
-			logger.Debugln("[refDuel] B Wins setting odds", odds)
+			logger.Debugf("[refDuel] B Wins setting odds %d\n", odds)
 		} else {
 			odds = 1500
-			logger.Errorln("[refDuel] Err - determining winner")
+			logger.Errorf("[refDuel] Could not determine winner\n")
 			return
 		}
 	} else {
@@ -879,16 +876,16 @@ func (duel entry) refDuel() (tx string) {
 			// A wins
 			winner = 'A'
 			address = duel.Duelist.Address
-			logger.Debugln("[refDuel] A Wins setting odds", odds)
+			logger.Debugf("[refDuel] A Wins setting odds %d\n", odds)
 		} else if finalB >= 5 && (finalA > finalB || finalA < 5) {
 			// B wins
 			winner = 'B'
 			address = duel.Opponent.Address
 			odds = 950
-			logger.Debugln("[refDuel] B Wins setting odds", odds)
+			logger.Debugf("[refDuel] B Wins setting odds %d\n", odds)
 		} else {
 			odds = 1600
-			logger.Errorln("[refDuel] Err - determining winner")
+			logger.Errorf("[refDuel] Could not determine winner\n")
 			return
 		}
 	}
@@ -925,10 +922,10 @@ func (duel entry) refDuel() (tx string) {
 
 	default:
 		odds = 1700
-		logger.Errorln("[refDuel] Err - processing items")
+		logger.Errorf("[refDuel] Could not process items\n")
 		return
 	}
-	logger.Println("[refDuel]", string(winner), "items:", duel.Items, "rank1:", rank1, "rank2:", rank2, "diff:", diff, "odds:", odds, address)
+	logger.Printf("[refDuel] %s items: %d rank1: %d rank2: %d diff: %d odds: %d %s\n", string(winner), duel.Items, rank1, rank2, diff, odds, address)
 
 	tx = duel.ref(duel.Num, address, winner, odds)
 
@@ -938,7 +935,7 @@ func (duel entry) refDuel() (tx string) {
 // Dry run for owner and ref function to run regular duels
 func (duel entry) dryRefDuel() (payout string) {
 	if !checkOwnerAndRefs() {
-		logger.Warnln("[refDuel] You are not the owner or a ref on this SCID")
+		logger.Warnf("[refDuel] You are not the owner or a ref on this SCID\n")
 		return
 	}
 
@@ -954,23 +951,23 @@ func (duel entry) dryRefDuel() (payout string) {
 	valB := duel.Opponent.Value
 	finalB := valB - optB
 
-	logger.Debugln("[refDuel] A:", finalA, "B:", finalB)
+	logger.Debugf("[refDuel] A: %d B: %d", finalA, finalB)
 
 	if finalA == 5 && finalB == 5 {
 		if optA > optB {
 			// A wins
 			winner = 'A'
 			address = duel.Duelist.Address
-			logger.Debugln("[refDuel] A Wins setting odds", odds)
+			logger.Debugf("[refDuel] A Wins setting odds %d\n", odds)
 		} else if optB > optA {
 			// B wins
 			winner = 'B'
 			address = duel.Opponent.Address
 			odds = 950
-			logger.Debugln("[refDuel] B Wins setting odds", odds)
+			logger.Debugf("[refDuel] B Wins setting odds %d\n", odds)
 		} else {
 			odds = 1500
-			logger.Errorln("[refDuel] Err - determining winner")
+			logger.Errorf("[refDuel] Could not determine winner\n")
 			return
 		}
 	} else {
@@ -978,16 +975,16 @@ func (duel entry) dryRefDuel() (payout string) {
 			// A wins
 			winner = 'A'
 			address = duel.Duelist.Address
-			logger.Debugln("[refDuel] A Wins setting odds", odds)
+			logger.Debugf("[refDuel] A Wins setting odds %d\n", odds)
 		} else if finalB >= 5 && (finalA > finalB || finalA < 5) {
 			// B wins
 			winner = 'B'
 			address = duel.Opponent.Address
 			odds = 950
-			logger.Debugln("[refDuel] B Wins setting odds", odds)
+			logger.Debugf("[refDuel] B Wins setting odds %d\n", odds)
 		} else {
 			odds = 1600
-			logger.Errorln("[refDuel] Err - determining winner")
+			logger.Errorf("[refDuel] Could not determine winner\n")
 			return
 		}
 	}
@@ -1024,10 +1021,10 @@ func (duel entry) dryRefDuel() (payout string) {
 
 	default:
 		odds = 1700
-		logger.Errorln("[refDuel] Err - processing items")
+		logger.Errorf("[refDuel] Could not process items\n")
 		return
 	}
-	logger.Debugln("[refDuel]", string(winner), "items:", duel.Items, "rank1:", rank1, "rank2:", rank2, "diff:", diff, "odds:", odds, address)
+	logger.Debugf("[refDuel] %s items: %d rank1: %d rank2: %d diff: %d odds: %d %s\n", string(winner), duel.Items, rank1, rank2, diff, odds, address)
 
 	var amt uint64
 	pot := duel.Amt * 2
@@ -1078,7 +1075,7 @@ func (duel entry) getTotalRanks() (r1 uint64, r2 uint64) {
 		r1 = validateAssetRank(duel.Duelist.Char) + validateAssetRank(duel.Duelist.Item1) + validateAssetRank(duel.Duelist.Item2)
 		r2 = validateAssetRank(duel.Opponent.Char) + validateAssetRank(duel.Opponent.Item1) + validateAssetRank(duel.Opponent.Item2)
 	default:
-		logger.Errorln("[getAssetRank] Err - getting ranks", "r1:", r1, "r2:", r2)
+		logger.Errorf("[getAssetRank] Could not get ranks r1: %d r2: %d\n", r1, r2)
 	}
 
 	return
@@ -1094,7 +1091,7 @@ func (duel entry) getDuelistRank() (r1 uint64) {
 	case 2:
 		r1 = validateAssetRank(duel.Duelist.Char) + validateAssetRank(duel.Duelist.Item1) + validateAssetRank(duel.Duelist.Item2)
 	default:
-		logger.Errorln("[getDuelistRank] Err - getting rank")
+		logger.Errorf("[getDuelistRank] Could not get rank\n")
 	}
 
 	return

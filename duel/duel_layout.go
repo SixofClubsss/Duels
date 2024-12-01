@@ -13,6 +13,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/civilware/tela/logger"
 	dreams "github.com/dReam-dApps/dReams"
 	"github.com/dReam-dApps/dReams/bundle"
 	"github.com/dReam-dApps/dReams/dwidget"
@@ -1538,10 +1539,10 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 
 				if !synced && gnomes.Scan() {
 					sync_label.SetText("Creating duels index, this may take a few minutes to complete")
-					logger.Println("[Duels] Syncing")
+					logger.Printf("[Duels] Syncing\n")
 					// Check current variables on SC and store
 					if err := gnomon.StoreLiveSCIDVariableDetails(DUELSCID); err != nil {
-						logger.Errorln("[Duels] Could not store current variables:", err)
+						logger.Errorf("[Duels] Could not store current variables: %s\n", err)
 					}
 					gnomes.GetStorage("DUELBUCKET", "DUELS", &Duels)
 					synced = true
@@ -1629,7 +1630,7 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 
 				d.WorkDone()
 			case <-d.CloseDapp():
-				logger.Println("[Duels] Done")
+				logger.Printf("[Duels] Done\n")
 				return
 			}
 		}

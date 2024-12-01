@@ -15,19 +15,19 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/blang/semver/v4"
+	"github.com/civilware/tela/logger"
 	dreams "github.com/dReam-dApps/dReams"
 	"github.com/dReam-dApps/dReams/bundle"
 	"github.com/dReam-dApps/dReams/dwidget"
 	"github.com/dReam-dApps/dReams/gnomes"
 	"github.com/dReam-dApps/dReams/menu"
 	"github.com/dReam-dApps/dReams/rpc"
-	"github.com/sirupsen/logrus"
 )
 
 const appName = "Duels"
 const appID = "dreamdapps.io.duels"
 
-var version = semver.MustParse("0.1.1-dev.17")
+var version = semver.MustParse("0.1.1-dev.19")
 var gnomon = gnomes.NewGnomes()
 
 // Check duel package version
@@ -39,9 +39,6 @@ func Version() semver.Version {
 func StartApp() {
 	n := runtime.NumCPU()
 	runtime.GOMAXPROCS(n)
-
-	// Initialize logrus logger to stdout
-	gnomes.InitLogrusLog(logrus.InfoLevel)
 
 	// Read config.json file
 	config := menu.GetSettings(appName)
