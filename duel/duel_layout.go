@@ -111,6 +111,10 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 				return
 			}
 
+			if rpc.GetAssetBalance(asset_map[removeRank(s)]) != 1 {
+				dialog.NewInformation("Asset Initiated", "You have a balance of 0 for this asset, it may be in use currently", d.Window).Show()
+			}
+
 			total_rank_label.Text = fmt.Sprintf("You're Rank: (R%d)", Inventory.findRank())
 			total_rank_label.Refresh()
 
@@ -156,6 +160,10 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 			return
 		}
 
+		if rpc.GetAssetBalance(asset_map[removeRank(s)]) != 1 {
+			dialog.NewInformation("Asset Initiated", "You have a balance of 0 for this asset, it may be in use currently", d.Window).Show()
+		}
+
 		total_rank_label.Text = fmt.Sprintf("You're Rank: (R%d)", Inventory.findRank())
 		total_rank_label.Refresh()
 
@@ -192,6 +200,10 @@ func LayoutAll(asset_map map[string]string, d *dreams.AppObject) fyne.CanvasObje
 			}
 			item2_cont.Objects[1].(*fyne.Container).Objects[0] = item2
 			return
+		}
+
+		if rpc.GetAssetBalance(asset_map[removeRank(s)]) != 1 {
+			dialog.NewInformation("Asset Initiated", "You have a balance of 0 for this asset, it may be in use currently", d.Window).Show()
 		}
 
 		total_rank_label.Text = fmt.Sprintf("You're Rank: (R%d)", Inventory.findRank())
